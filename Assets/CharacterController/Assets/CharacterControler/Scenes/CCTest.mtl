@@ -1,0 +1,6 @@
+﻿# Prodeus export
+# Material Count: 2
+
+newmtl Blockout
+map_Kd F:/ProdeusBuilds/CurrentBuild/WindowsDev_DLC/Prodeus_Data/StreamingAssets/Materials/Blockout.png
+illum 1
