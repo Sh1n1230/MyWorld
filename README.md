@@ -1,0 +1,1 @@
+<img src="Cat playing animation.svg">
