@@ -16,6 +16,9 @@ public class CharacterControllerBase : MonoBehaviour
 	[SerializeField] float visualsOffsetThreshold = 0.1f;
 	[SerializeField] float maxVisualsOffset = 0.5f;
 	[SerializeField] float visualsLerpFactor = 20f;
+
+	[Header("Animation")]
+	[SerializeField] Animator characterAnimator;
 	
 	[Header("Debug Ground")]
 	[SerializeField] bool showDebugVisuals = true;
@@ -265,6 +268,19 @@ public class CharacterControllerBase : MonoBehaviour
     public Vector3 GetMoveVector() {
 	    return moveVector;
     }
+
+    public float HorizontalSpeed {
+	    get {
+		    if (thisRigidbody == null) return 0f;
+		    Vector3 vel = thisRigidbody.linearVelocity;
+		    vel.y = 0f;
+		    return vel.magnitude;
+	    }
+    }
+
+    public float MaxSpeed => maxRunSpeed;
+    public bool Grounded => grounded;
+    public bool IsJumping => jumping;
     
     public void InputJump(bool jumpWasPressedThisFrame, bool jumpIsPressed) {
 	    float dTime = Time.deltaTime;
@@ -687,10 +703,10 @@ public class CharacterControllerBase : MonoBehaviour
 	void SetGrounded() {
 		// play land sound
 		if (!grounded) MovementLand();
-			
+
 		// set grounded
 		grounded = true;
-				
+
 		// allow double jump
 		canDoubleJump = true;
 
@@ -699,6 +715,9 @@ public class CharacterControllerBase : MonoBehaviour
 
 		// reset air time
 		airTime = 0f;
+
+		// clear any queued Jump triggers to prevent double landing animation after double jump
+		characterAnimator?.ResetTrigger("Jump");
 	}
 	
 	//==========================================//
@@ -792,22 +811,30 @@ public class CharacterControllerBase : MonoBehaviour
 		}
 
 		// jumping
-		MovementJump(dTime); 
-		
+		MovementJump(dTime);
+
 		if (float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z)) {
 			Debug.LogError(velocity);
 		}
-		
+
 		// clip velocity
 		velocity = ClipVelocity(velocity, dTime);
-		
+
 		if (float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z)) {
 			Debug.LogError(velocity);
 		} else {
 			// Update the Rigid Body velocity
 			thisRigidbody.linearVelocity = velocity;
 		}
-	
+
+		// Update animator parameters
+		if (characterAnimator != null) {
+			Vector3 xzVel = velocity;
+			xzVel.y = 0f;
+			float normalizedSpeed = maxRunSpeed > 0f ? xzVel.magnitude / maxRunSpeed : 0f;
+			characterAnimator.SetFloat("Speed", normalizedSpeed);
+			characterAnimator.SetBool("IsGrounded", grounded);
+		}
 
 	}
 
@@ -823,13 +850,14 @@ public class CharacterControllerBase : MonoBehaviour
 
 	private void MovementJumpInstant(float dTime) {
 		if (!inputJump) return;
-		
+
 		if (grounded) {
 			jumpCoolDownTimer = 0.1f;
 			grounded = false;
 			jumping = true;
 			velocity.y = jumpSpeed;
 			characterAudio?.PlayJump();
+			characterAnimator?.SetTrigger("Jump");
 			return;
 		}
 
@@ -840,6 +868,7 @@ public class CharacterControllerBase : MonoBehaviour
 			canDoubleJump = false;
 			velocity.y = jumpSpeed;
 			characterAudio?.PlayJump();
+			characterAnimator?.SetTrigger("Jump");
 			return;
 		}
 	}
@@ -873,9 +902,9 @@ public class CharacterControllerBase : MonoBehaviour
 			jumpTimer = 0f;
 			grounded = false;
 			jumping = true;
-			
 			velocity.y = jumpSpeed;
 			characterAudio.PlayJump();
+			characterAnimator?.SetTrigger("Jump");
 			return;
 		}
 
@@ -886,6 +915,7 @@ public class CharacterControllerBase : MonoBehaviour
 			canDoubleJump = false;
 			velocity.y = jumpSpeed;
 			characterAudio?.PlayJump();
+			characterAnimator?.SetTrigger("Jump");
 			return;
 		}
 	}
