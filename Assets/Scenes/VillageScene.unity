@@ -3314,7 +3314,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7084112464286097090, guid: a92c571304aea0f468085d3a1b5aa659, type: 3}
       insertIndex: 0
       addedObject: {fileID: 201012911}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6384885833336211467, guid: a92c571304aea0f468085d3a1b5aa659, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1275165169}
   m_SourcePrefab: {fileID: 100100000, guid: a92c571304aea0f468085d3a1b5aa659, type: 3}
 --- !u!1001 &989609064
 PrefabInstance:
@@ -3878,6 +3881,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3324608818864385758, guid: 221d28980749f45b79dd9b8f51a75940, type: 3}
+--- !u!1 &1275165167 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6384885833336211467, guid: a92c571304aea0f468085d3a1b5aa659, type: 3}
+  m_PrefabInstance: {fileID: 967573630}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1275165169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1275165167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e15559d4ac77a492880ec1d2cd0ac2eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SmokingController
+  animator: {fileID: 201012910}
 --- !u!1001 &1275371738
 PrefabInstance:
   m_ObjectHideFlags: 0
