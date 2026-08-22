@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interactive 3D Portfolio — 設計サマリ</title>
+<style>
+:root{
+  --bg:#0e1014; --bg2:#14171d; --card:#181c23; --line:#262c36;
+  --fg:#e6e9ef; --mut:#98a2b3; --dim:#6b7480;
+  --acc:#e8a33d; --acc2:#5aa9e6; --ok:#4fb477; --warn:#e0a458; --bad:#e06c6c;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: light){
+  :root{ --bg:#f7f8fa; --bg2:#fff; --card:#fff; --line:#e3e6eb; --fg:#1a1d23; --mut:#5b6474; --dim:#8a919e; }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Segoe UI",sans-serif;
+  line-height:1.75; font-size:15px; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px; margin:0 auto; padding:0 24px 120px}
+header{
+  padding:72px 0 40px; border-bottom:1px solid var(--line); margin-bottom:8px;
+}
+.eyebrow{font:600 11px/1 var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--acc); margin-bottom:18px}
+h1{font-size:34px; line-height:1.3; margin:0 0 14px; letter-spacing:-.01em; font-weight:700}
+.sub{color:var(--mut); font-size:15px; max-width:62ch; margin:0}
+.meta{margin-top:24px; display:flex; flex-wrap:wrap; gap:8px}
+.tag{font:500 11.5px/1 var(--mono); color:var(--mut); background:var(--bg2); border:1px solid var(--line); padding:6px 10px; border-radius:5px}
+h2{
+  font-size:13px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--acc); margin:64px 0 6px; font-family:var(--mono);
+}
+h2 + .h2sub{color:var(--dim); font-size:13px; margin:0 0 22px}
+h3{font-size:17px; margin:34px 0 10px; font-weight:650; letter-spacing:-.005em}
+p{margin:0 0 14px}
+a{color:var(--acc2)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin:16px 0}
+.card.hi{border-color:color-mix(in srgb,var(--acc) 45%, var(--line))}
+.grid{display:grid; gap:12px}
+@media(min-width:720px){ .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)} }
+.kicker{font:600 10.5px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin-bottom:10px}
+.big{font-size:26px; font-weight:700; letter-spacing:-.02em; margin:0 0 4px}
+.big small{display:block; font-size:12px; font-weight:400; color:var(--mut); letter-spacing:0; margin-top:6px; line-height:1.6}
+table{width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px}
+th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font:600 11px/1.4 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--dim); white-space:nowrap}
+td code{font:500 12.5px var(--mono); background:var(--bg2); padding:1px 5px; border-radius:4px; border:1px solid var(--line)}
+pre{
+  background:var(--bg2); border:1px solid var(--line); border-radius:9px; padding:18px 20px;
+  overflow-x:auto; font:400 12.5px/1.65 var(--mono); color:var(--mut); margin:16px 0;
+}
+ul,ol{margin:0 0 14px; padding-left:22px}
+li{margin:5px 0}
+.pill{display:inline-block; font:600 10.5px/1 var(--mono); padding:4px 8px; border-radius:20px; letter-spacing:.05em}
+.p-ok{background:color-mix(in srgb,var(--ok) 16%,transparent); color:var(--ok)}
+.p-warn{background:color-mix(in srgb,var(--warn) 16%,transparent); color:var(--warn)}
+.p-bad{background:color-mix(in srgb,var(--bad) 16%,transparent); color:var(--bad)}
+.p-acc{background:color-mix(in srgb,var(--acc) 16%,transparent); color:var(--acc)}
+.dec{display:flex; gap:16px; padding:16px 0; border-bottom:1px solid var(--line); align-items:flex-start}
+.dec:last-child{border-bottom:0}
+.dec .id{font:700 12px/1.6 var(--mono); color:var(--acc); min-width:34px}
+.dec .body{flex:1}
+.dec .t{font-weight:650; margin-bottom:3px}
+.dec .r{color:var(--mut); font-size:13.5px}
+.q{border-left:2px solid var(--acc); padding:2px 0 2px 18px; margin:18px 0; color:var(--mut); font-size:14px}
+.q strong{color:var(--fg)}
+.flow{display:flex; flex-direction:column; gap:0; margin:18px 0}
+.step{display:flex; gap:16px; align-items:flex-start; padding:14px 0}
+.step .n{
+  flex:0 0 26px; height:26px; border-radius:50%; border:1px solid var(--acc); color:var(--acc);
+  display:grid; place-items:center; font:600 11px var(--mono); margin-top:2px;
+}
+.step .c{flex:1}
+.step .c b{display:block; font-weight:650; margin-bottom:2px}
+.step .c span{color:var(--mut); font-size:13.5px}
+.arrowline{width:1px; height:14px; background:var(--line); margin-left:13px}
+.phase{border-left:2px solid var(--line); padding:0 0 0 20px; margin:0 0 4px}
+.phase.active{border-color:var(--acc)}
+.phase h4{margin:0 0 2px; font-size:15px; font-weight:650}
+.phase p{margin:0 0 18px; color:var(--mut); font-size:13.5px}
+.footnote{color:var(--dim); font-size:12.5px; margin-top:8px}
+hr{border:0; border-top:1px solid var(--line); margin:52px 0}
+.checkbox{color:var(--acc); font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Design Proposal · Draft v1</div>
+  <h1>3D ワールドそのものを<br>ポートフォリオにする</h1>
+  <p class="sub">Unity で作った世界を歩き回り、建造物や NPC を選択して作品・人となりを発見していく Web ポートフォリオ。その設計判断と、完成させるための進め方。</p>
+  <div class="meta">
+    <span class="tag">github.com/Sh1n1230/MyWorld</span>
+    <span class="tag">Unity 6000.5.7f1 / URP 17.5.0</span>
+    <span class="tag">43 commits · Git LFS 有効</span>
+    <span class="tag">2026-08-16</span>
+  </div>
+</header>
+
+<h2>Investigation</h2>
+<p class="h2sub">既存リポジトリの調査結果 — 設計はすべてこの事実に基づく</p>
+
+<div class="grid g3">
+  <div class="card"><div class="kicker">Git 履歴</div><div class="big">19 MB<small>pack サイズ。履歴自体は非常に軽い。バイナリは LFS に逃がせている</small></div></div>
+  <div class="card"><div class="kicker">LFS オブジェクト</div><div class="big">864 MB<small>4,010 個。無料枠 10 GiB に対して余裕あり</small></div></div>
+  <div class="card"><div class="kicker">インポート済アセット</div><div class="big">887 MB<small>WebGL ビルドサイズの最大リスク要因</small></div></div>
+</div>
+
+<div class="card hi">
+  <div class="kicker" style="color:var(--ok)">結論</div>
+  <p style="margin:0"><strong>現行リポジトリの Git 設定は、すでに完璧です。</strong> <code>.gitignore</code> は GitHub 公式 Unity テンプレート（<code>Library/</code> <code>Temp/</code> <code>Build/</code> <code>Logs/</code> <code>UserSettings/</code> すべて除外済み）、<code>.gitattributes</code> は公式テンプレートで FBX・PNG・EXR・WAV 等の LFS 指定も完備、LFS も正常稼働。<strong>直すべき箇所はありません。</strong></p>
+</div>
+
+<div class="card">
+  <div class="kicker" style="color:var(--warn)">注意 — 誤検知</div>
+  <p style="margin:0">この調査環境（Mac 上の Linux VM）には <code>git-lfs</code> が入っておらず、<code>git status</code> が <strong>4,028 ファイルを「変更あり」と誤表示</strong>します。これはリポジトリの異常ではありません。Mac のターミナルで <code>git status</code> を実行して確認してください。</p>
+</div>
+
+<h3>すでに存在しているもの</h3>
+<table>
+<tr><th>項目</th><th>状態</th></tr>
+<tr><td><code>CafeScene.unity</code></td><td>362 KB — 最も作り込みが進んでいる（8/16 更新）</td></tr>
+<tr><td><code>VillageScene.unity</code></td><td>283 KB — 作りかけ</td></tr>
+<tr><td><code>FactoryScene.unity</code></td><td>45 KB — ほぼ空</td></tr>
+<tr><td>タバコ演出</td><td><code>Smoking.cs</code> / <code>CigaretteSmokeController.cs</code> / <code>Smoking_cut.anim</code> が着手済み</td></tr>
+<tr><td>キャラクター制御</td><td><code>CharacterControllerBase.cs</code>（13点レイキャスト接地判定・スロープ・段差・コヨーテタイム）</td></tr>
+<tr><td>Unity 公式スキル</td><td><code>.agents/skills/</code> に 21 個。<code>optimize-web</code> と <code>unity-cli</code> がそのまま使える</td></tr>
+<tr><td>Cinemachine</td><td>未導入（Phase 1 では不要と判断）</td></tr>
+</table>
+
+<hr>
+
+<h2>Three Decisions</h2>
+<p class="h2sub">設計書全体は、この 3 つの判断から演繹されている</p>
+
+<div class="card hi">
+  <div class="kicker">判断 1</div>
+  <h3 style="margin-top:0">Unity は「世界」だけを描く。文字はすべて Web が描く。</h3>
+  <p>Unity 内に日本語テキストを持つと、TMP のフォントアトラス（数千グリフ）がビルドサイズとメモリを圧迫し、文章を直すたびに Unity の再ビルドが必要になり、スマホでの可読性調整も難しく、SEO には一切寄与しません。</p>
+  <p style="margin-bottom:0"><strong>セリフも作品説明も UI 文字列も、すべて Web 側の DOM でレンダリングします。</strong>Unity が持つのは 3D 世界・キャラクター・カメラ・演出・サウンド、そして「今これがインタラクト可能だ」という<em>文字を使わない</em>表現だけ。<br><span style="color:var(--ok)">→ これ 1 つでフォント問題・多言語・レスポンシブ・アクセシビリティ・SEO が同時に解けます。</span></p>
+</div>
+
+<div class="card hi">
+  <div class="kicker">判断 2</div>
+  <h3 style="margin-top:0">Unity は一度ロードしたら、絶対にアンマウントしない。</h3>
+  <p>Unity WebGL の初回ロードは 20〜60 秒。作品を 1 つ見るたびにページ遷移して再ロードする体験は成立しません。</p>
+  <p style="margin-bottom:0">作品詳細は <strong>DOM オーバーレイ + URL だけを書き換える</strong>方式に。同時に、その URL に<strong>直接アクセスした場合は静的 HTML ページ</strong>を返します。同じ URL に 2 つのレンダリング経路を用意することで、SEO・SNS シェア・WebGL 非対応端末のフォールバックが同一 URL 空間で成立します。</p>
+</div>
+
+<div class="card hi">
+  <div class="kicker">判断 3</div>
+  <h3 style="margin-top:0">Unity リポジトリには一切手を触れない。Web は新規リポジトリ。</h3>
+  <p style="margin-bottom:0">現行 <code>MyWorld</code> は Git 履歴も LFS も <code>.gitignore</code> も既に健全。手を入れる理由がありません。Web は <code>Sh1n1230.github.io</code> として新規に始めます。<strong>移行作業ゼロ = 履歴破壊リスクゼロ。</strong></p>
+</div>
+
+<hr>
+
+<h2>UX Flow</h2>
+<p class="h2sub">訪問者が体験する 60 秒</p>
+
+<div class="flow">
+  <div class="step"><div class="n">1</div><div class="c"><b>言語選択（JA / EN）</b><span>この画面の裏で Unity WebGL がロードされる。ボタンのクリックは、ブラウザが音声再生を許可するための user gesture も兼ねる — 待ち時間と技術的要件が一致している。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">2</div><div class="c"><b>入店演出（3〜5 秒）</b><span>ドアが開く音 → 明転 → カフェの店内。操作方法のヒントを 5 秒だけ表示。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">3</div><div class="c"><b>探索</b><span>NPC は常にソワソワしたループアニメーション。照明・BGM の定位・店の動線で自然に視線を誘導する。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">4</div><div class="c"><b>インタラクション可能を認知</b><span>距離 4m でタバコが淡く発光 → 2m で小さなアイコン → PC はホバーでアウトライン、Mobile は右下に大きな丸ボタン。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">5</div><div class="c"><b>火をつける</b><span>カメラが 0.6 秒でタバコにフレーミング。着火 SE + パーティクル + 煙。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">6</div><div class="c"><b>対話 — ポートフォリオ世界への導入</b><span>カメラが NPC の肩越しへ。DOM の対話ボックスが下からせり上がる。クリック / タップ / Space で送る。</span></div></div>
+</div>
+
+<h3>「何をクリックすればいいか分からない」を防ぐ</h3>
+<div class="q"><strong>最も効く対策は UI の工夫ではなく、数の制限です。</strong>インタラクト可能オブジェクトを 1 シーンあたり 5〜9 個に厳密に制限する。CAFE は Phase 1 で <strong>1 個だけ</strong>。</div>
+
+<table>
+<tr><th>層</th><th>発火条件</th><th>表現</th><th>実装</th></tr>
+<tr><td><span class="pill p-acc">L1</span> 環境的誘導</td><td>常時</td><td>照明・色・動線・アニメ・音の定位。UI ではない</td><td>Unity（レベルデザイン）</td></tr>
+<tr><td><span class="pill p-acc">L2</span> 近接ヒント</td><td>距離 &lt; 4m</td><td>リムライトが距離に応じてフェードイン。2m でアイコン</td><td>Unity</td></tr>
+<tr><td><span class="pill p-acc">L3</span> 照準ヒント</td><td>ホバー / 最優先対象</td><td>アウトライン + カーソル変化 + ラベル</td><td>Unity + Web</td></tr>
+</table>
+
+<h3>PC とスマホ</h3>
+<div class="grid g2">
+<div class="card">
+  <div class="kicker">PC</div>
+  <ul style="margin-bottom:8px">
+    <li>移動 = WASD</li>
+    <li>カメラ = <strong>右ドラッグ</strong></li>
+    <li>インタラクト = 左クリック / E</li>
+  </ul>
+  <p class="footnote" style="margin:0"><strong>ポインタロックは使いません。</strong>カーソルが見えていることが「クリックできる対象がある」という認知の前提になるため。没入感より確実性を優先します。</p>
+</div>
+<div class="card">
+  <div class="kicker">Mobile</div>
+  <ul style="margin-bottom:8px">
+    <li>移動 = 左半分の仮想スティック</li>
+    <li>カメラ = 右半分のスワイプ</li>
+    <li>インタラクト = タップ <strong>または</strong>近接時の丸ボタン</li>
+  </ul>
+  <p class="footnote" style="margin:0"><strong>丸ボタンは必須です。</strong>モバイルに hover はなく、小さな 3D 対象を正確にタップさせるのは失敗率が高いため、「近づけば必ず押せる」保険を用意します。</p>
+</div>
+</div>
+
+<hr>
+
+<h2>Architecture</h2>
+<p class="h2sub">Unity と Web の責務分割</p>
+
+<pre>┌─────────────────────── BROWSER ───────────────────────┐
+│  Next.js  app/[lang]/layout.tsx                       │
+│  ┌──────────────────┐   ┌────────────────────────┐   │
+│  │ &lt;canvas&gt;         │   │  DOM Overlay Layer     │   │
+│  │  Unity WebGL     │   │  LoadingScreen         │   │
+│  │  （絶対に外さない）│   │  DialogueBox           │   │
+│  │                  │   │  ProjectPanel / HUD    │   │
+│  └────────┬─────────┘   └───────────┬────────────┘   │
+│           │      ┌──────────────┐   │                │
+│           └─────▶│ Bridge Client│◀──┘                │
+│                  │  envelope    │                     │
+│                  │  send queue  │                     │
+│                  │  zod 検証     │                     │
+│                  └──────────────┘                     │
+│                                                        │
+│  静的ルート（Unity なし・SEO / フォールバック）          │
+│  /ja  /ja/projects/[slug]  /ja/about  /ja/no-webgl     │
+└────────────────────────────────────────────────────────┘
+                         ▲ 静的ファイル
+        ┌────────────────┴─────────────────┐
+        │  GitHub Pages (gh-pages branch)  │
+        └────────────────▲─────────────────┘
+                         │ 手動デプロイ 1 コマンド
+   ┌─────────────────────┴──────────────────────┐
+   │ repo: MyWorld          repo: Sh1n1230.github.io │
+   │ （既存・不変）    ──▶   （新規・Web / 数 MB）    │
+   │  Unity WebGL build     public/unity/ は gitignore│
+   └──────────────────────────────────────────────┘</pre>
+
+<table>
+<tr><th></th><th>Unity が持つ</th><th>Web が持つ</th></tr>
+<tr><td>担当</td><td>3D 世界・プレイヤー・カメラ・NPC・アニメ・ライティング・SFX/BGM・演出・<strong>ID</strong></td><td><strong>すべての文章</strong>・翻訳・ルーティング・外部リンク・静的ページ・レスポンシブ・Unity のロード管理</td></tr>
+<tr><td>持たない</td><td>文章・翻訳・URL・作品のメタデータ</td><td>3D・ゲームロジック・フレーム単位の入力</td></tr>
+<tr><td>境界の原則</td><td colspan="2">Unity は「どのオブジェクトが選ばれたか」を <strong>ID 文字列</strong>で伝えるだけ。その ID が何を意味するかは知らない。<br><span style="color:var(--ok)">→ この境界を守る限り、文章の修正・翻訳の追加・リンク差し替えに Unity 再ビルドは不要。</span></td></tr>
+</table>
+
+<h3>通信</h3>
+<table>
+<tr><th>方向</th><th>方式</th></tr>
+<tr><td>Web → Unity</td><td><code>unityInstance.SendMessage("WebBridge", "Receive", json)</code></td></tr>
+<tr><td>Unity → Web</td><td><code>.jslib</code> → <code>window.dispatchEvent(new CustomEvent("unity:message"))</code></td></tr>
+</table>
+<p>メッセージはすべて <strong>1 つの封筒型</strong>に統一します。種類ごとに関数を生やすと <code>SendMessage</code> の受け口が増えて破綻するためです。</p>
+<pre>{ v: 1, id: string, type: "CIGARETTE_LIT", payload: {...}, ts: number }</pre>
+<p><code>BRIDGE_READY</code> が来るまで Web は送信をキューに積み、未知の <code>type</code> は双方向とも <strong>warn して無視</strong>します（前方互換 — 絶対に例外を投げない）。</p>
+
+<hr>
+
+<h2>Repository</h2>
+<p class="h2sub">4 案の比較と結論</p>
+
+<table>
+<tr><th>観点</th><th>案 A/B<br>既存 repo に web/ 追加</th><th>案 C<br>Unity を unity/ へ移動</th><th style="color:var(--acc)">案 D<br>Web を別 repo</th></tr>
+<tr><td>Git 履歴の保全</td><td><span class="pill p-ok">無傷</span></td><td><span class="pill p-warn">追随はする</span></td><td><span class="pill p-ok">無傷</span></td></tr>
+<tr><td>移行作業</td><td>ほぼゼロ</td><td><span class="pill p-bad">大</span> Library 全再生成・IDE/MCP 再設定</td><td><span class="pill p-ok">ゼロ</span></td></tr>
+<tr><td>Web 作業時のクローン</td><td>LFS 864 MB を毎回引く</td><td>同左</td><td><span class="pill p-ok">数 MB</span></td></tr>
+<tr><td>GitHub Pages</td><td>巨大 repo が公開元に</td><td>同左</td><td><span class="pill p-ok">そのまま Pages に</span></td></tr>
+<tr><td>Claude Code / Cowork</td><td>6.2 GB の作業ツリー</td><td>同左</td><td><span class="pill p-ok">探索が速い</span></td></tr>
+<tr><td>Unity↔Web の同時変更</td><td><span class="pill p-ok">1 コミット</span></td><td><span class="pill p-ok">1 コミット</span></td><td><span class="pill p-warn">2 コミット</span></td></tr>
+</table>
+
+<div class="card hi">
+<p style="margin:0"><strong>結論 — 案 D。</strong>唯一の弱点である「2 コミットに分かれる」は実際にはほぼ問題になりません。両者の接点は<strong>イベント名と ID 文字列だけ</strong>で、変更頻度が極めて低いからです。その契約を <code>docs/EVENT_SCHEMA.md</code> として Web repo に置き、Unity 側の定数ファイルと対で更新します。</p>
+</div>
+
+<h3>デプロイ — GitHub Pages の制約への対応</h3>
+<p>GitHub Pages は<strong>カスタム HTTP ヘッダを設定できません</strong>。これが 2 つの帰結を生みます。</p>
+<ul>
+  <li><code>Content-Encoding: gzip</code> を返せない → Unity の <strong>Decompression Fallback を ON</strong> にする必要がある</li>
+  <li><code>Content-Type: application/wasm</code> を返せない → WASM ストリーミングコンパイルが効かず起動がやや遅い（動作はする）</li>
+</ul>
+<p>また公開サイト 1 GB / 帯域 100 GB 月（ソフト）の上限があるため、<strong>ビルド成果物をリポジトリ履歴に溜めない</strong>方式にします。</p>
+<pre>main       : ソースのみ。バイナリは一切入らない（public/unity/ は gitignore）
+gh-pages   : 常に 1 コミットだけ。デプロイのたびに履歴ごと force push で上書き</pre>
+<p class="footnote"><strong>GitHub Actions で Unity をビルドしない理由:</strong> ライセンス secret、6 GB 超の checkout、そして LFS 帯域（1 回のフルチェックアウトで約 0.9 GiB / 無料枠 10 GiB 月）が必要になり、月 10 回で枠を使い切ります。ポートフォリオ 1 個にこのコストは見合いません。Unity は Editor でビルドするのだから、そのままローカルから流すのが自然です。</p>
+
+<hr>
+
+<h2>Decisions</h2>
+<p class="h2sub">今すぐ決めるべき 11 件 — ここに同意できるかを確認してください</p>
+
+<div class="card">
+<div class="dec"><div class="id">D1</div><div class="body"><div class="t">リポジトリ = 案 D（Web は別 repo <code>Sh1n1230.github.io</code>、MyWorld は不変）</div><div class="r">移行リスクゼロ。Pages・CI・Cowork のすべてで有利</div></div></div>
+<div class="dec"><div class="id">D2</div><div class="body"><div class="t">Web = Next.js App Router + TypeScript + 静的エクスポート</div><div class="r">layout に canvas を置くだけで「遷移してもアンマウントされない」が成立し、同時に SSG で静的ページも生成できる唯一の選択肢</div></div></div>
+<div class="dec"><div class="id">D3</div><div class="body"><div class="t">ホスティング = GitHub Pages（gh-pages orphan branch へ force push）</div><div class="r">無料・簡単。Cloudflare Pages への移行余地を残す</div></div></div>
+<div class="dec"><div class="id">D4</div><div class="body"><div class="t">Unity 圧縮 = Gzip + Decompression Fallback ON</div><div class="r">Pages がヘッダを設定できないため必須。Brotli の JS 展開は Gzip より明確に遅く、転送量のメリットが相殺されやすい</div></div></div>
+<div class="dec"><div class="id">D5</div><div class="body"><div class="t">テキストはすべて Web（DOM）。Unity は ID のみ</div><div class="r">フォント・i18n・SEO・レスポンシブを一挙に解決する。<strong>最も影響の大きい判断</strong></div></div></div>
+<div class="dec"><div class="id">D6</div><div class="body"><div class="t">情報表示 = DOM オーバーレイ + URL 同期。Unity は再ロードしない</div><div class="r">ロード時間の制約から必然的に導かれる</div></div></div>
+<div class="dec"><div class="id">D7</div><div class="body"><div class="t">言語切替 = Web 側。<code>/ja</code> <code>/en</code> のパスルーティング</div><div class="r">SEO・シェア・プリロード時間の活用がすべて成立する</div></div></div>
+<div class="dec"><div class="id">D8</div><div class="body"><div class="t">通信 = SendMessage + .jslib CustomEvent、単一 Envelope</div><div class="r">公式手段のみ・追加依存なし。iframe は使わない</div></div></div>
+<div class="dec"><div class="id">D9</div><div class="body"><div class="t">データ = Web repo の TypeScript + zod。CMS なし</div><div class="r">1 人運用には Git がそのまま CMS として最適</div></div></div>
+<div class="dec"><div class="id">D10</div><div class="body"><div class="t">Phase 1 = CAFE のみ、インタラクタブル 1 個、対話 UI 1 種</div><div class="r">完成させるための唯一の方法</div></div></div>
+<div class="dec"><div class="id">D11</div><div class="body"><div class="t">設計実装より先に、現状 CAFE をビルドして実機計測（Phase 0）</div><div class="r">最大の未知数を最初に潰す</div></div></div>
+</div>
+
+<h3>今は決めなくてよいこと</h3>
+<p>VILLAGE の建物構成 / FACTORY の展示方法 / Cinemachine の導入 / Addressables / 独自ドメイン / アナリティクス / Contact フォームの実装方式 / Cloudflare Pages への移行 / BGM の作り込み / 進行度の保存</p>
+
+<h3>明示的に「やらない」と決めること</h3>
+<p>Unity 内での日本語テキスト表示 / CI での Unity 自動ビルド / iframe 隔離 / ヘッドレス CMS / サーバーサイド / マルチプレイヤー / ページ遷移で Unity をアンマウントする構成</p>
+
+<hr>
+
+<h2>Roadmap</h2>
+<p class="h2sub">完成させるための順序</p>
+
+<div class="phase active">
+  <h4>Phase 0 — 基盤確認 <span class="pill p-acc">1〜2 日</span></h4>
+  <p><strong>まだ何も新規実装しない。</strong>今ある CafeScene をそのまま WebGL ビルドして Next.js の最小構成に載せ、GitHub Pages に公開し、<strong>iPhone Safari で開く</strong>。</p>
+</div>
+<div class="phase">
+  <h4>Phase 1 — CAFE 体験 <span class="pill p-acc">2〜3 週</span></h4>
+  <p>Bridge 基盤 → インタラクション基盤 → CafeSequence の状態機械 → Web の対話 UI → 演出。完了定義は「入店 → 着火 → 対話が公開 URL で動く」。</p>
+</div>
+<div class="phase">
+  <h4>Phase 2 — ポートフォリオ化 <span class="pill p-acc">2〜3 週</span></h4>
+  <p>FACTORY に展示物 3 個、ProjectPanel、静的詳細ページ、SEO、OGP。</p>
+</div>
+<div class="phase">
+  <h4>Phase 3 — 世界の拡張 <span class="pill p-acc">4 週+</span></h4>
+  <p>VILLAGE / FACTORY の作り込み、エリア切替、HUD、ワールドマップ、発見カウンタ。</p>
+</div>
+<div class="phase">
+  <h4>Phase 4 — 磨き込み</h4>
+  <p>パフォーマンス、演出、アクセシビリティ、独自ドメイン。</p>
+</div>
+
+<div class="card hi">
+<div class="kicker">Phase 0 を独立させる理由</div>
+<p style="margin:0 0 12px"><strong>このプロジェクトの最大の未知数は「Unity WebGL が GitHub Pages 上で、実機のスマホで、許容できる速度で動くか」です。</strong>ここが破綻すると、その後の設計がすべて無意味になります。だからブリッジもオーバーレイも作る前に、まず現状の CAFE をそのまま公開して iPhone で開いてみます。</p>
+<table style="margin:0">
+<tr><th>指標</th><th>目標</th><th>許容</th><th>超えたら</th></tr>
+<tr><td>圧縮後サイズ</td><td>&lt; 30 MB</td><td>&lt; 60 MB</td><td>アセット削減 or Cloudflare Pages</td></tr>
+<tr><td>iPhone 初回ロード</td><td>&lt; 30 s</td><td>&lt; 60 s</td><td>同上</td></tr>
+<tr><td>iPhone でのクラッシュ</td><td>なし</td><td>—</td><td>メモリ設定・テクスチャ見直し</td></tr>
+<tr><td>フレームレート</td><td>30fps+</td><td>24fps+</td><td>ライティング・ポリゴン見直し</td></tr>
+</table>
+</div>
+
+<hr>
+
+<h2>Risks</h2>
+<p class="h2sub">重大度順</p>
+
+<table>
+<tr><th></th><th>リスク</th><th>対策</th></tr>
+<tr><td><span class="pill p-bad">高</span></td><td><strong>ビルドサイズ</strong><br>887 MB のインポート済みアセット。数個使うだけで数十 MB になる</td><td>Phase 0 で必ず実測。<code>Assets/Resources/</code> を作らない。テクスチャ Max Size を 1024 以下に。Crunch 圧縮。<code>optimize-web</code> スキルを活用</td></tr>
+<tr><td><span class="pill p-bad">高</span></td><td><strong>スコープの膨張</strong><br>作りたいことが無限に湧く構造。公開されないまま止まるのが最悪の結末</td><td>Phase 0/1 の完了定義を動かさない。<strong>Phase 1 が終わったら未完成でも一度公開する</strong>。「後でやる」リストに逃がす</td></tr>
+<tr><td><span class="pill p-warn">中</span></td><td><strong>Pages のヘッダ制約</strong><br>ネイティブ展開が使えず起動が遅くなる</td><td>Gzip + Fallback で開始。遅ければ Cloudflare Pages へ移行（静的ファイルを置き換えるだけ。設計変更不要）</td></tr>
+<tr><td><span class="pill p-warn">中</span></td><td><strong>iOS Safari のメモリ</strong><br>上限超過でタブが無言でリロードされる</td><td>Initial Memory 256 MB。SharedArrayBuffer を使わない。<code>deviceMemory</code> で低メモリ端末を検出し静的版へ誘導</td></tr>
+<tr><td><span class="pill p-warn">中</span></td><td><strong>何をクリックすればいいか分からない</strong></td><td>数の制限 + 3 層ヒント + CAFE を線形の訓練区間に。<strong>第三者に実機で触ってもらい無言で観察する</strong></td></tr>
+<tr><td><span class="pill p-ok">低</span></td><td><strong>LFS 帯域</strong></td><td>現在 864 MB / 無料枠 10 GiB。CI で Unity をビルドしなければ消費しない</td></tr>
+<tr><td><span class="pill p-ok">低</span></td><td><strong>音声の自動再生ブロック</strong></td><td>言語選択のクリックが user gesture を兼ねる設計になっている</td></tr>
+<tr><td><span class="pill p-ok">低</span></td><td><strong>SEO</strong></td><td>静的 HTML ページに全テキストが載る。<strong>判断 1 のおかげで追加コストゼロ</strong></td></tr>
+</table>
+
+<hr>
+
+<h2>Next Steps</h2>
+<p class="h2sub">今この瞬間から</p>
+
+<div class="flow">
+  <div class="step"><div class="n">1</div><div class="c"><b>この設計をレビューする</b><span>特に <strong>D1（別リポジトリ）</strong> と <strong>D5（テキストは全部 Web）</strong>。この 2 つが最も影響が大きいので、ここだけは納得してから進んでください。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">2</div><div class="c"><b>Unity で Build Target を Web (WebGL) に切替</b><span>初回はシェーダ再インポートに時間がかかります。Compression = Gzip / Decompression Fallback = ON / IL2CPP / Managed Stripping = High / Exceptions = Explicitly Thrown Only。Scenes In Build は CafeScene だけ。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">3</div><div class="c"><b>ビルドして圧縮後サイズを記録</b><span>ここで 100 MB を超えるようなら、設計ではなくアセット選定を先に見直す必要があります。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">4</div><div class="c"><b>最小の Web を作って GitHub Pages に公開</b><span>言語選択もブリッジもなし。canvas を出すだけ。ここは Claude Code が実装します。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">5</div><div class="c"><b>iPhone Safari で開いて計測</b><span>本プロジェクト最大の判断ポイント。結果を設計書に追記します。</span></div></div>
+  <div class="arrowline"></div>
+  <div class="step"><div class="n">6</div><div class="c"><b>Phase 1 着手</b><span>EVENT_SCHEMA の確定 → Unity Bridge → Web Bridge → <strong>BRIDGE_READY の往復が通ることを確認</strong>（ここが通れば残りは応用）→ インタラクション → 状態機械 → 対話 UI → 演出 → 公開。</span></div></div>
+</div>
+
+<hr>
+<p class="footnote">詳細な仕様・イベント一覧・スクリプト構成・TODO の全項目は <code>ARCHITECTURE.md</code> に記載しています。こちらが Claude Code が参照する正本です。<br>この HTML は人間が判断する部分の要約です。</p>
+
+</div>
+</body>
+</html>

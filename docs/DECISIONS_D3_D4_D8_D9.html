@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>保留中の決定 D3 / D4 / D8 / D9 — 根拠の説明</title>
+<style>
+:root{
+  --bg:#0e1014; --bg2:#14171d; --card:#181c23; --line:#262c36;
+  --fg:#e6e9ef; --mut:#98a2b3; --dim:#6b7480;
+  --acc:#e8a33d; --acc2:#5aa9e6; --ok:#4fb477; --warn:#e0a458; --bad:#e06c6c;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: light){
+  :root{ --bg:#f7f8fa; --bg2:#fff; --card:#fff; --line:#e3e6eb; --fg:#1a1d23; --mut:#5b6474; --dim:#8a919e; }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Segoe UI",sans-serif;
+  line-height:1.8; font-size:15px; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:900px; margin:0 auto; padding:0 24px 120px}
+header{padding:64px 0 36px; border-bottom:1px solid var(--line)}
+.eyebrow{font:600 11px/1 var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--acc); margin-bottom:16px}
+h1{font-size:30px; line-height:1.35; margin:0 0 12px; font-weight:700; letter-spacing:-.01em}
+.sub{color:var(--mut); margin:0; max-width:62ch}
+h2{font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--acc);
+   margin:72px 0 4px; font-family:var(--mono)}
+.h2sub{color:var(--dim); font-size:13px; margin:0 0 24px}
+h3{font-size:19px; margin:40px 0 12px; font-weight:650; letter-spacing:-.005em}
+h4{font-size:15.5px; margin:26px 0 8px; font-weight:650}
+p{margin:0 0 15px}
+a{color:var(--acc2)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin:18px 0}
+.card.hi{border-color:color-mix(in srgb,var(--acc) 45%,var(--line))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.card.bad{border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.kicker{font:600 10.5px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin-bottom:10px}
+table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px}
+th,td{text-align:left; padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font:600 11px/1.4 var(--mono); letter-spacing:.07em; text-transform:uppercase; color:var(--dim)}
+code{font:500 12.5px var(--mono); background:var(--bg2); padding:1.5px 5px; border-radius:4px; border:1px solid var(--line)}
+pre{background:var(--bg2); border:1px solid var(--line); border-radius:9px; padding:18px 20px;
+  overflow-x:auto; font:400 12.5px/1.7 var(--mono); color:var(--mut); margin:16px 0}
+pre code{background:none; border:0; padding:0; font-size:inherit}
+pre b{color:var(--fg); font-weight:600}
+pre .c{color:var(--dim)}
+pre .g{color:var(--ok)}
+pre .r{color:var(--bad)}
+ul,ol{margin:0 0 15px; padding-left:22px}
+li{margin:6px 0}
+.pill{display:inline-block; font:600 10.5px/1 var(--mono); padding:4px 8px; border-radius:20px; letter-spacing:.04em; white-space:nowrap}
+.p-ok{background:color-mix(in srgb,var(--ok) 16%,transparent); color:var(--ok)}
+.p-warn{background:color-mix(in srgb,var(--warn) 16%,transparent); color:var(--warn)}
+.p-bad{background:color-mix(in srgb,var(--bad) 16%,transparent); color:var(--bad)}
+.p-acc{background:color-mix(in srgb,var(--acc) 16%,transparent); color:var(--acc)}
+.q{border-left:2px solid var(--acc); padding:4px 0 4px 18px; margin:20px 0; color:var(--mut); font-size:14.5px}
+.q strong{color:var(--fg)}
+.two{display:grid; gap:14px}
+@media(min-width:720px){ .two{grid-template-columns:1fr 1fr} }
+hr{border:0; border-top:1px solid var(--line); margin:56px 0}
+.footnote{color:var(--dim); font-size:12.5px}
+.decision-head{display:flex; align-items:baseline; gap:12px; margin:0 0 6px}
+.decision-head .id{font:700 20px var(--mono); color:var(--acc)}
+.decision-head .t{font-size:20px; font-weight:700; letter-spacing:-.01em}
+.status{font:600 11px/1 var(--mono); padding:5px 10px; border-radius:20px; letter-spacing:.05em}
+.s-change{background:color-mix(in srgb,var(--warn) 18%,transparent); color:var(--warn)}
+.s-keep{background:color-mix(in srgb,var(--ok) 16%,transparent); color:var(--ok)}
+.s-simple{background:color-mix(in srgb,var(--acc2) 18%,transparent); color:var(--acc2)}
+.num{counter-reset:s}
+.numstep{display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--line)}
+.numstep:last-child{border-bottom:0}
+.numstep .n{flex:0 0 24px; height:24px; border-radius:50%; background:var(--bg2); border:1px solid var(--line);
+  display:grid; place-items:center; font:600 11px var(--mono); color:var(--mut); margin-top:3px}
+.numstep .c{flex:1}
+.numstep .c b{display:block; margin-bottom:2px; font-weight:650}
+.numstep .c span{color:var(--mut); font-size:13.5px}
+.win{color:var(--ok); font-weight:600}
+.lose{color:var(--bad); font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Follow-up · D3 / D4 / D8 / D9</div>
+  <h1>保留された 4 つの決定について</h1>
+  <p class="sub">D3・D4 はホスティングの比較を、D8・D9 は「なぜその形になるのか」を原理から説明します。調べ直した結果、<strong>D3 と D4 は前回の推奨を変更します</strong>。D9 も簡素化を提案します。</p>
+</header>
+
+<h2>Summary</h2>
+<p class="h2sub">先に結論だけ</p>
+
+<div class="card hi">
+  <table style="margin:0">
+  <tr><th>#</th><th>前回の推奨</th><th>今回の推奨</th><th></th></tr>
+  <tr><td><b>D3</b></td><td>GitHub Pages</td><td><b>Cloudflare Pages</b><br><span class="footnote">（.data が 25 MiB 超なら Netlify）</span></td><td><span class="status s-change">変更</span></td></tr>
+  <tr><td><b>D4</b></td><td>Gzip + Fallback ON</td><td><b>Brotli + Fallback OFF</b><br><span class="footnote">（D3 の変更に連動）</span></td><td><span class="status s-change">変更</span></td></tr>
+  <tr><td><b>D8</b></td><td>SendMessage + .jslib + 封筒</td><td>同じ<br><span class="footnote">（そもそも他に道がない、を説明）</span></td><td><span class="status s-keep">維持</span></td></tr>
+  <tr><td><b>D9</b></td><td>TypeScript + zod</td><td><b>コンテンツは TypeScript のみ</b><br><span class="footnote">zod は Unity からの受信部分だけ</span></td><td><span class="status s-simple">簡素化</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+<p style="margin:0"><strong>前回 GitHub Pages を推した理由と、それを取り下げる理由。</strong>前回は「GitHub だけで完結して手軽」を重視しました。しかし今回きちんと調べ直したところ、他社の無料枠でも手間はほとんど変わらず、<strong>GitHub Pages だけが HTTP ヘッダを設定できない</strong>という制約を負っていることが分かりました。この制約は Unity WebGL の起動時間に直接効きます。榛さんの優先順位（1位 UX / 4位 パフォーマンス）を踏まえると、同じ無料・同じ手間なら制約の少ない方を選ぶべきです。</p>
+</div>
+
+<hr>
+
+<h2>Decision D3</h2>
+<p class="h2sub">どこにホスティングするか</p>
+
+<div class="decision-head"><span class="id">D3</span><span class="t">Cloudflare Pages を第一候補にする</span></div>
+
+<h3>なぜホスティング選びが Unity WebGL では特別なのか</h3>
+
+<p>普通の Web サイトなら、ホスティングはどこでも大差ありません。HTML が数十 KB、画像が数 MB という世界だからです。ところが Unity WebGL は<strong>初回に数十 MB を一気にダウンロードさせる</strong>という、Web としては極めて異例の性質を持ちます。だからホスティングの「転送まわりの細かい仕様」が、そのまま体験の良し悪しになります。</p>
+
+<p>具体的に効いてくるのは、次の 3 点だけです。</p>
+
+<div class="card">
+<div class="num">
+<div class="numstep"><div class="n">1</div><div class="c"><b>カスタム HTTP ヘッダを設定できるか</b><span>ファイルを Brotli 圧縮して置いたとき、「これは Brotli で圧縮済みです」とブラウザに伝える必要があります。この伝達手段が <code>Content-Encoding: br</code> というヘッダです。これを設定できないと、ブラウザは圧縮を解けず、Unity 側で JavaScript を使って自力で解凍することになります（＝遅い）。</span></div></div>
+<div class="numstep"><div class="n">2</div><div class="c"><b>1 ファイルあたりのサイズ上限</b><span>Unity は 3D モデルやテクスチャを <code>.data</code> という<strong>1 個の巨大なファイル</strong>にまとめます。これは分割できません。ホスティング側に「1 ファイル ◯ MB まで」という制限があると、ここに引っかかります。</span></div></div>
+<div class="numstep"><div class="n">3</div><div class="c"><b>帯域（月あたりの転送量）</b><span>1 人が訪問するたびに数十 MB 転送されます。仮に 30 MB のサイトに月 1,000 人が来ると 30 GB。ポートフォリオならまず問題になりませんが、一応見ておく項目です。</span></div></div>
+</div>
+</div>
+
+<h3>4 サービスの比較</h3>
+
+<table>
+<tr>
+  <th></th>
+  <th>GitHub Pages</th>
+  <th style="color:var(--acc)">Cloudflare Pages</th>
+  <th>Netlify</th>
+  <th>Vercel (Hobby)</th>
+</tr>
+<tr>
+  <td><b>① カスタムヘッダ</b><br><span class="footnote">Brotli ネイティブ展開</span></td>
+  <td><span class="pill p-bad">不可</span><br><span class="footnote">これが決定的な弱点</span></td>
+  <td><span class="pill p-ok">可</span><br><span class="footnote"><code>_headers</code> ファイル</span></td>
+  <td><span class="pill p-ok">可</span><br><span class="footnote"><code>_headers</code> ファイル</span></td>
+  <td><span class="pill p-ok">可</span><br><span class="footnote"><code>vercel.json</code></span></td>
+</tr>
+<tr>
+  <td><b>② 1 ファイル上限</b></td>
+  <td>100 MB<br><span class="footnote">Git の上限</span></td>
+  <td><span class="pill p-warn">25 MiB</span><br><span class="footnote">要注意ポイント</span></td>
+  <td>実質問題なし</td>
+  <td>デプロイ合計 100 MB<br><span class="footnote">Hobby の CLI 上限</span></td>
+</tr>
+<tr>
+  <td><b>③ 帯域 / 月</b></td>
+  <td>100 GB（ソフト）</td>
+  <td><span class="pill p-ok">無制限</span></td>
+  <td>100 GB</td>
+  <td>100 GB</td>
+</tr>
+<tr>
+  <td><b>サイト全体の上限</b></td>
+  <td>1 GB</td>
+  <td>20,000 ファイル</td>
+  <td>—</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td><b>料金</b></td>
+  <td>無料</td>
+  <td>無料<br><span class="footnote">ビルド 500 回/月</span></td>
+  <td>無料</td>
+  <td>無料</td>
+</tr>
+<tr>
+  <td><b>制約</b></td>
+  <td>無料枠は公開リポジトリのみ</td>
+  <td>—</td>
+  <td>—</td>
+  <td><span class="pill p-warn">商用利用不可</span><br><span class="footnote">Hobby は非商用限定</span></td>
+</tr>
+<tr>
+  <td><b>始める手間</b></td>
+  <td><span class="pill p-ok">最小</span><br><span class="footnote">GitHub だけで完結</span></td>
+  <td>アカウント作成 + GitHub 連携</td>
+  <td>アカウント作成 + GitHub 連携</td>
+  <td>アカウント作成 + GitHub 連携</td>
+</tr>
+</table>
+
+<h3>これが体験にどう出るか</h3>
+
+<p>仮に Unity のビルドが「無圧縮 80 MB」だったとして、実際の訪問者に起きることを比べます。</p>
+
+<table>
+<tr><th></th><th>GitHub Pages</th><th>ヘッダを設定できるホスト</th></tr>
+<tr><td>圧縮形式</td><td>Gzip（Brotli は展開が遅すぎる）</td><td>Brotli</td></tr>
+<tr><td>ダウンロード量</td><td>約 26 MB</td><td><span class="win">約 20 MB（-23%）</span></td></tr>
+<tr><td>解凍の担当</td><td><span class="lose">Unity が JS で自力解凍</span></td><td><span class="win">ブラウザが自動で解凍</span></td></tr>
+<tr><td>解凍にかかる時間</td><td>数秒（端末が遅いほど伸びる）</td><td><span class="win">実質ゼロ</span></td></tr>
+<tr><td>ローダー JS のサイズ</td><td><span class="lose">解凍プログラムを同梱するため肥大</span></td><td><span class="win">最小</span></td></tr>
+<tr><td>WASM の起動</td><td><span class="lose">ストリーミング不可</span><br><span class="footnote"><code>Content-Type: application/wasm</code> を返せないため、ダウンロード完了を待ってからコンパイル</span></td><td><span class="win">ダウンロードしながらコンパイル</span></td></tr>
+</table>
+
+<div class="q">要するに GitHub Pages では、<strong>より多くダウンロードした上で、さらに解凍とコンパイルを待つ</strong>ことになります。スマホのような非力な端末ほど差が開きます。</div>
+
+<h3>ただし Cloudflare Pages には落とし穴がある</h3>
+
+<div class="card bad">
+<div class="kicker" style="color:var(--bad)">重要な制約</div>
+<p><strong>Cloudflare Pages は 1 ファイル 25 MiB までしか置けません。</strong>Unity の <code>.data</code> ファイルは分割できない単一ファイルなので、これを超えるとデプロイが失敗します。</p>
+<p style="margin-bottom:0">つまり <strong>Phase 0 の実測結果が、そのままホスティングの選択を決めます</strong>。この意味でも「まず現状のまま 1 回ビルドしてサイズを測る」ことが先決です。</p>
+</div>
+
+<table>
+<tr><th>Phase 0 の実測結果</th><th>選ぶべきホスティング</th></tr>
+<tr><td><code>.data</code> の圧縮後が <b>25 MiB 未満</b></td><td><span class="pill p-ok">Cloudflare Pages</span> 帯域無制限・ヘッダ可・最速</td></tr>
+<tr><td><code>.data</code> の圧縮後が <b>25 MiB 以上</b></td><td><span class="pill p-acc">Netlify</span> ヘッダ可・ファイルサイズの実質制限なし</td></tr>
+<tr><td>そもそも 100 MB を超えている</td><td>ホスティング以前の問題。アセットの見直しへ</td></tr>
+</table>
+
+<h3>GitHub Pages を選ぶ余地はあるか</h3>
+
+<p>あります。GitHub Pages の利点は<strong>「新しいアカウントもサービスも増やさなくていい」</strong>という一点で、これは初学者にとって決して小さくありません。管理するものが増えないのは実際に価値があります。</p>
+
+<p>ただし今回の場合、どのサービスも「GitHub リポジトリを連携して push すると自動デプロイ」という同じ使い方ができるので、<strong>最初の 10 分だけ手間が増える代わりに、恒久的に起動が速くなる</strong>という交換になります。ポートフォリオは訪問者の第一印象がすべてなので、この交換は割に合うと考えます。</p>
+
+<div class="card">
+<p style="margin:0"><strong>なお、この選択はいつでもやり直せます。</strong>今回の設計はホスティングに依存する部分が一切ありません（静的ファイルを置くだけ）。「まず GitHub Pages で公開して、遅いと感じたら移す」でも損はしません。移行作業は実質、別のサービスに同じリポジトリを連携するだけです。</p>
+</div>
+
+<hr>
+
+<h2>Decision D4</h2>
+<p class="h2sub">Unity の圧縮設定をどうするか</p>
+
+<div class="decision-head"><span class="id">D4</span><span class="t">Brotli + Decompression Fallback OFF</span></div>
+
+<p>これは D3 に完全に連動する決定です。まず「Decompression Fallback」が何なのかを説明します。</p>
+
+<h3>Decompression Fallback とは何か</h3>
+
+<p>Unity はビルド時にファイルを圧縮します。その圧縮ファイルをブラウザが受け取ったとき、<strong>誰が解凍するのか</strong>には 2 通りあります。</p>
+
+<div class="two">
+<div class="card ok">
+<div class="kicker" style="color:var(--ok)">Fallback OFF（ヘッダを設定できる場合）</div>
+<pre style="margin:0"><code>サーバー
+  ↓ 「これは Brotli です」と
+  ↓  ヘッダで伝える
+ブラウザ
+  ↓ <b>自分で解凍する</b>
+  ↓ （C++ で実装された
+  ↓   ネイティブ機能・高速）
+Unity が起動</code></pre>
+</div>
+<div class="card bad">
+<div class="kicker" style="color:var(--bad)">Fallback ON（ヘッダを設定できない場合）</div>
+<pre style="margin:0"><code>サーバー
+  ↓ 何も伝えられない
+  ↓ （ただのバイナリ扱い）
+ブラウザ
+  ↓ 解凍できないのでそのまま渡す
+Unity のローダー JS
+  ↓ <b>JavaScript で自力解凍</b>
+  ↓ （解凍プログラムを
+  ↓   同梱する分だけ肥大）
+Unity が起動</code></pre>
+</div>
+</div>
+
+<p>Fallback は「サーバーが協力してくれないときの保険」です。<strong>保険が要らない環境なら切るべき</strong>で、切れば速くなり、ローダーも小さくなります。</p>
+
+<h3>Gzip と Brotli の使い分け</h3>
+
+<table>
+<tr><th></th><th>Gzip</th><th>Brotli</th></tr>
+<tr><td>圧縮率</td><td>普通</td><td><span class="win">高い（Gzip より 15〜25% 小さい）</span></td></tr>
+<tr><td>ブラウザのネイティブ解凍</td><td>速い</td><td>速い</td></tr>
+<tr><td>JavaScript での解凍</td><td>まあ速い</td><td><span class="lose">明確に遅い</span></td></tr>
+<tr><td>ビルド時間</td><td>速い</td><td>遅い</td></tr>
+<tr><td>向いている場面</td><td>Fallback ON のとき</td><td>Fallback OFF のとき</td></tr>
+</table>
+
+<p>これが前回 GitHub Pages に対して <b>Gzip</b> を推した理由です。ヘッダを設定できない環境では JavaScript で解凍するしかなく、そこでは Brotli の「小さい」という利点が「解凍が遅い」で相殺されてしまうからです。</p>
+
+<div class="card hi">
+<p style="margin:0"><strong>結論はホスティングとセットで決まります。</strong></p>
+<table style="margin:12px 0 0">
+<tr><th>ホスティング</th><th>圧縮形式</th><th>Fallback</th></tr>
+<tr><td>Cloudflare Pages / Netlify / Vercel</td><td><b>Brotli</b></td><td><b>OFF</b></td></tr>
+<tr><td>GitHub Pages</td><td><b>Gzip</b></td><td><b>ON</b></td></tr>
+</table>
+</div>
+
+<p class="footnote">補足：Unity の設定画面では <code>Project Settings → Player → Publishing Settings</code> にある <code>Compression Format</code> と <code>Decompression Fallback</code> がこれにあたります。切り替えは再ビルドが必要ですが、設定自体は 2 クリックです。</p>
+
+<hr>
+
+<h2>Decision D8</h2>
+<p class="h2sub">Unity と Web はどうやって会話するのか</p>
+
+<div class="decision-head"><span class="id">D8</span><span class="t">SendMessage + .jslib + 単一の封筒</span></div>
+
+<h3>まず前提：Unity WebGL は「箱」である</h3>
+
+<p>Unity で書いた C# のコードは、WebGL ビルドすると <strong>WebAssembly</strong> という形式に変換されます。これはブラウザの中で動く、機械語に近い高速な形式です。</p>
+
+<p>重要なのは、この WebAssembly の世界と、Web ページの JavaScript の世界が<strong>基本的に別世界</strong>だということです。C# から <code>document.getElementById(...)</code> を呼ぶことはできませんし、JavaScript から C# の変数を直接読むこともできません。</p>
+
+<pre><code>┌─────────────────────────────────────────┐
+│  ブラウザのページ                        │
+│                                         │
+│  JavaScript の世界                       │
+│  ・DOM（HTML の要素）                    │
+│  ・React のコンポーネント                 │
+│  ・URL、履歴                             │
+│                                         │
+│   ┌───────────────────────────────┐    │
+│   │  Unity WebAssembly の世界      │    │
+│   │  ・C# のクラス                  │    │
+│   │  ・GameObject                  │    │
+│   │  ・3D の描画                    │    │
+│   │                               │    │
+│   │  <b>← ここと外は直接つながっていない</b> │
+│   └───────────────────────────────┘    │
+└─────────────────────────────────────────┘</code></pre>
+
+<p>そこで Unity は、この壁に<strong>2 つだけ穴</strong>を用意しています。</p>
+
+<h3>穴 その1：外から中へ ＝ SendMessage</h3>
+
+<pre><code><span class="c">// JavaScript 側</span>
+unityInstance.SendMessage(<span class="g">"WebBridge"</span>, <span class="g">"Receive"</span>, <span class="g">"こんにちは"</span>);
+<span class="c">//                         ↑GameObject名   ↑メソッド名   ↑引数（1個だけ）</span></code></pre>
+
+<p>シーンの中にある <code>WebBridge</code> という名前の GameObject を探し、そこに付いているスクリプトの <code>Receive</code> というメソッドを呼びます。<strong>渡せる引数は 1 個だけ</strong>で、文字列か数値しか渡せません。この制約が後で効いてきます。</p>
+
+<h3>穴 その2：中から外へ ＝ .jslib プラグイン</h3>
+
+<p><code>.jslib</code> は「C# から呼べる JavaScript 関数」を書いておくファイルです。Unity のビルドに一緒に埋め込まれます。</p>
+
+<pre><code><span class="c">// Assets/Plugins/PortfolioBridge.jslib（JavaScript で書く）</span>
+mergeInto(LibraryManager.library, {
+  PortfolioEmit: function (ptr) {
+    var json = UTF8ToString(ptr);
+    window.dispatchEvent(new CustomEvent(<span class="g">"unity:message"</span>, { detail: json }));
+  }
+});
+
+<span class="c">// C# 側からはこう呼ぶ</span>
+[DllImport("__Internal")] static extern void PortfolioEmit(string json);</code></pre>
+
+<h3>他の選択肢を検討した結果</h3>
+
+<table>
+<tr><th>方式</th><th>結果</th></tr>
+<tr><td><code>postMessage</code></td><td><span class="pill p-bad">不採用</span> これは「別のページ同士」が会話するための仕組みです。使うには Unity を <code>&lt;iframe&gt;</code> という入れ子のページに隔離する必要があり、そうすると画面サイズの調整・フォーカス・オーバーレイの重ね順が全部ややこしくなります。<strong>今回は Unity と Web が同じページにいるので、そもそも出番がありません。</strong></td></tr>
+<tr><td><code>Application.ExternalEval</code></td><td><span class="pill p-bad">不採用</span> 古い Unity の機能で、すでに非推奨・削除されています。</td></tr>
+<tr><td>WebSocket / HTTP 通信</td><td><span class="pill p-bad">不採用</span> サーバーが必要になります。今回は静的ファイルだけで完結する構成なので、サーバーを立てる理由がありません。</td></tr>
+</table>
+
+<div class="q"><strong>つまり D8 の「通信方式」の部分は、実は選択の余地がありません。</strong>Unity が公式に用意した穴は 2 つだけで、それを使う以外の道がない。前回の設計書で「比較」と書いたのは正確ではなく、実質は「他がなぜ使えないかの確認」でした。<br><br>本当に設計判断が必要なのは、<strong>その 2 つの穴をどう使うか</strong>です。ここから先が D8 の本体です。</div>
+
+<h3>本題：なぜ「封筒（envelope）」にするのか</h3>
+
+<p>さきほどの制約を思い出してください。<strong><code>SendMessage</code> は引数を 1 個しか渡せない。</strong>では「言語を日本語にして」と「一時停止して」と「対話を次の行に進めて」を、どう伝え分けるか。</p>
+
+<h4>素朴なやり方 — メッセージの種類ごとにメソッドを作る</h4>
+
+<pre><code><span class="c">// Unity 側（C#）</span>
+public class WebBridge : MonoBehaviour {
+  public void SetLanguage(string lang) { ... }
+  public void SetPaused(string flag)   { ... }
+  public void AdvanceDialogue(string index) { ... }
+  <span class="c">// 新しい種類が増えるたび、ここにメソッドを足す</span>
+}</code></pre>
+
+<p>一見わかりやすいのですが、これには重大な問題があります。</p>
+
+<div class="card bad">
+<p style="margin:0"><strong>新しいメッセージを 1 種類増やすたびに、Unity のコードを書き換えて WebGL を再ビルドしなければなりません。</strong>Unity の WebGL ビルドは、この規模のプロジェクトなら 1 回 20〜40 分かかります。「作品パネルを閉じたことを Unity に伝えたい」と思いつくたびに、40 分待つことになります。</p>
+</div>
+
+<p>さらに、複数の値を渡したくなった瞬間に破綻します。<code>AdvanceDialogue</code> に「対話 ID」と「行番号」の 2 つを渡したい。引数は 1 個しかない。すると結局 <code>"cafe.intro:3"</code> のような文字列を自作して、Unity 側で <code>Split(':')</code> することになります。自作フォーマットは必ず壊れます。</p>
+
+<h4>封筒方式 — 受け口を 1 つだけにする</h4>
+
+<pre><code><span class="c">// Unity 側（C#）— これ以降、増やさない</span>
+public class WebBridge : MonoBehaviour {
+  public void Receive(string json) {
+    var env = JsonUtility.FromJson&lt;Envelope&gt;(json);
+    switch (env.type) {
+      case "SET_LANGUAGE":      ...; break;
+      case "SET_PAUSED":        ...; break;
+      case "ADVANCE_DIALOGUE":  ...; break;
+      default: Debug.LogWarning($"unknown: {env.type}"); break;
+    }
+  }
+}</code></pre>
+
+<pre><code><span class="c">// 実際に送られてくる中身</span>
+{
+  "v": 1,
+  "id": "a3f9",
+  "type": "ADVANCE_DIALOGUE",
+  "payload": { "dialogueId": "cafe.intro", "lineIndex": 3 },
+  "ts": 1755331200000
+}</code></pre>
+
+<p><code>Receive</code> という受け口は<strong>もう二度と変えません</strong>。増えるのは <code>switch</code> の分岐だけです。そして <code>payload</code> は JSON なので、いくつでも値を入れられます。</p>
+
+<h3>封筒の各項目がなぜ必要か</h3>
+
+<table>
+<tr><th>項目</th><th>なぜ必要か</th></tr>
+<tr><td><code>type</code></td><td>どの処理に振り分けるか。これがないと封筒の意味がない</td></tr>
+<tr><td><code>payload</code></td><td>実際のデータ。ここが自由な形なので、引数 1 個の制約を回避できる</td></tr>
+<tr><td><code>v</code><br><span class="footnote">バージョン</span></td><td><b>これが一番わかりにくいので詳しく説明します。</b>Unity のビルドと Web の更新は別々に行われます。Web は数分でデプロイできるので頻繁に更新しますが、Unity は 40 分かかるのでたまにしか更新しません。<br><br>すると必ず「Web は新しいのに Unity が古い」という状態が生まれます。そのとき Web が新しい形式のメッセージを送ると、古い Unity は理解できません。<code>v</code> があれば、<strong>「理解できないから無視する」という穏当な失敗</strong>ができます。なければ、解釈をしくじって<strong>予期しない挙動やクラッシュ</strong>になります。</td></tr>
+<tr><td><code>id</code></td><td>デバッグ時に「送ったメッセージと届いたメッセージ」を突き合わせるため。無くても動きますが、うまく動かないときの原因究明が段違いに楽になります</td></tr>
+<tr><td><code>ts</code><br><span class="footnote">タイムスタンプ</span></td><td>同上。ログを時系列で並べられます</td></tr>
+</table>
+
+<h3>「未知の type は無視する」がなぜ重要か</h3>
+
+<div class="card">
+<p style="margin:0"><strong>ポートフォリオにおける最悪の失敗は、訪問者に真っ白な画面を見せることです。</strong>採用担当者が開いた瞬間にエラーで止まったら、内容以前に終わります。</p>
+<p style="margin:12px 0 0">知らないメッセージが来たときに例外を投げると、Unity の実行が止まり、世界が固まります。だから<strong>知らないものは黙って無視して、世界は動かし続ける</strong>。開発中はコンソールに警告が出るので気づけます。これは「エラー処理」というより<strong>「壊れ方を選ぶ」設計</strong>です。</p>
+</div>
+
+<h3>BRIDGE_READY の握手がなぜ必要か</h3>
+
+<p>Unity のロードには数十秒かかります。その間、Web 側はもう動いています。訪問者が「日本語」を選ぶのは、Unity のロードが終わる<strong>ずっと前</strong>かもしれません。</p>
+
+<pre><code>0 秒   Web が起動、Unity のロード開始
+2 秒   訪問者が「日本語」をクリック
+       → Web が SET_LANGUAGE を送る
+       → <span class="r">まだ WebBridge という GameObject が存在しない</span>
+       → <span class="r">メッセージは何事もなく消える（エラーも出ない）</span>
+35 秒  Unity のロード完了
+       → 言語が英語のまま。原因も分からない</code></pre>
+
+<p>これを防ぐために、<strong>Unity 側の準備ができたら「準備できました」と自分から言う</strong>ようにします（<code>BRIDGE_READY</code>）。Web はそれを受け取るまで、送りたいメッセージを<strong>キューに貯めておく</strong>。届いた瞬間にまとめて流す。</p>
+
+<pre><code>0 秒   Web 起動、Unity ロード開始
+2 秒   「日本語」クリック → <span class="g">キューに保存</span>
+35 秒  Unity → BRIDGE_READY
+       Web → <span class="g">キューを一気に送信</span>
+       → 正しく日本語になる</code></pre>
+
+<div class="q">この「握手してから話す」という形は、通信を扱うプログラムでは定番の型です。<strong>相手がいつ準備できるか分からないときは、準備完了の合図を待つ。</strong>ここを省くと、再現しづらいバグ（たまに言語が切り替わらない、等）に必ず悩まされます。</div>
+
+<hr>
+
+<h2>Decision D9</h2>
+<p class="h2sub">作品情報や文章をどこに置くか</p>
+
+<div class="decision-head"><span class="id">D9</span><span class="t">コンテンツは TypeScript ファイル。zod は使わない</span></div>
+
+<div class="card hi">
+<p style="margin:0"><strong>まず前回の提案を訂正します。</strong>「TypeScript + zod」と書きましたが、<strong>コンテンツ管理に zod は不要です</strong>。zod が要るのは Unity から飛んでくるメッセージの検証だけで、そこと混ぜて説明したのは私の説明不足でした。切り分けます（理由は後述）。</p>
+</div>
+
+<h3>何を管理したいのか</h3>
+
+<pre><code>作品：Unity Horror Game
+  タイトル       日本語 / 英語
+  概要           日本語 / 英語
+  本文           日本語 / 英語
+  担当           プログラマ
+  使用技術       Unity, C#
+  期間           2024/04 - 2024/09
+  画像           3 枚
+  GitHub         https://...</code></pre>
+
+<p>これが将来 20〜30 件。加えて NPC のセリフや UI の文字列もあります。<strong>置き場所の候補は 5 つ</strong>ありました。</p>
+
+<h3>候補の比較 — 「誤字を 1 つ直す」で比べる</h3>
+
+<p>抽象的に比べても分かりにくいので、<strong>「公開後に説明文の誤字を見つけた。直して反映する」</strong>という一番よくある作業で比べます。</p>
+
+<table>
+<tr><th>置き場所</th><th>誤字を直す作業</th><th>判定</th></tr>
+<tr>
+  <td><b>Unity の ScriptableObject</b><br><span class="footnote">Unity の中にデータを持つ</span></td>
+  <td>Unity Editor を開く → 修正 → <b>WebGL を再ビルド（20〜40 分）</b> → デプロイ</td>
+  <td><span class="pill p-bad">論外</span></td>
+</tr>
+<tr>
+  <td><b>ヘッドレス CMS</b><br><span class="footnote">Contentful など。管理画面から編集</span></td>
+  <td>管理画面にログイン → 修正 → 保存。<b>作業自体は最も楽</b></td>
+  <td><span class="pill p-warn">過剰</span></td>
+</tr>
+<tr>
+  <td><b>Markdown</b></td>
+  <td>ファイルを開いて直す → push</td>
+  <td><span class="pill p-warn">一長一短</span></td>
+</tr>
+<tr>
+  <td><b>JSON</b></td>
+  <td>ファイルを開いて直す → push</td>
+  <td><span class="pill p-warn">惜しい</span></td>
+</tr>
+<tr>
+  <td><b>TypeScript</b></td>
+  <td>ファイルを開いて直す → push</td>
+  <td><span class="pill p-ok">採用</span></td>
+</tr>
+</table>
+
+<h4>CMS を採らない理由</h4>
+<p>作業は確かに楽です。ただし引き換えに、<strong>外部サービスへの依存</strong>を抱えます。そのサービスが落ちればサイトも壊れる、無料枠の条件が変われば移行が必要になる、アカウントとAPIキーの管理が増える。<strong>1 人が 20 件の作品を管理するのに、この装備は重すぎます。</strong>チームで週に何十件も記事を出すなら話は別です。</p>
+
+<h4>Markdown を主役にしない理由</h4>
+<p>長い文章には最適です。ただし <code>technologies: [Unity, C#]</code> のような<strong>構造のあるデータ</strong>には弱く、書き間違えても誰も教えてくれません。将来、本文が長くなったら「メタ情報は TypeScript、本文だけ Markdown」というハイブリッドにできます。それは必要になってから決めれば十分です。</p>
+
+<h4>JSON と TypeScript の違い ← ここが本題</h4>
+
+<p>この 2 つは見た目がほとんど同じです。違いは<strong>「間違えたとき、いつ気づけるか」</strong>だけです。</p>
+
+<div class="two">
+<div class="card bad">
+<div class="kicker" style="color:var(--bad)">JSON の場合</div>
+<pre style="margin:0 0 12px"><code>{
+  "id": "unity-horror-game",
+  <span class="r">"titel"</span>: { "ja": "ホラーゲーム" },
+  "technologies": ["Unity", "C#"]
+}</code></pre>
+<p style="margin:0"><code>title</code> を <code>titel</code> と打ち間違えています。<strong>エディタは何も言いません。ビルドも通ります。</strong>気づくのは、公開されたサイトを開いて作品名の欄に <code>undefined</code> と表示されているのを見たときです。<span class="lose">最悪の場合、それを見つけるのは採用担当者です。</span></p>
+</div>
+<div class="card ok">
+<div class="kicker" style="color:var(--ok)">TypeScript の場合</div>
+<pre style="margin:0 0 12px"><code>export const p: Project = {
+  id: "unity-horror-game",
+  <span class="r">titel</span>: { ja: "ホラーゲーム" },
+  technologies: ["Unity", "C#"]
+}
+<span class="c">// ↑ この時点でエディタに赤い波線</span>
+<span class="c">// 「'titel' は Project 型に存在しません」</span></code></pre>
+<p style="margin:0"><strong>打った瞬間に赤線が出て、ビルドも止まります。</strong>さらに <code>ja:</code> まで打った時点で、次に何を書けばいいかの候補が自動で出ます（補完）。<span class="win">間違えようがなくなります。</span></p>
+</div>
+</div>
+
+<p>「型」というのは、<strong>Project というデータはこういう形をしているはずだ、という約束を先に書いておく</strong>ことです。約束から外れたものを書いたら、その場で止めてくれます。</p>
+
+<pre><code><span class="c">// この「約束」を 1 回だけ書いておく</span>
+type Project = {
+  id: string;
+  title: { ja: string; en: string };   <span class="c">// ja と en が両方必須</span>
+  technologies: string[];
+  github?: string;                      <span class="c">// ? は「あってもなくてもいい」</span>
+}</code></pre>
+
+<p>この約束のおかげで、<strong>「英語版を書き忘れた作品」もビルド時に見つかります</strong>。20 件を手作業でチェックする必要がなくなる、というのが実務上いちばん効く利点です。</p>
+
+<h3>「Git が CMS になる」の意味</h3>
+
+<p>コンテンツをリポジトリのファイルとして持つと、副産物としてこうなります。</p>
+
+<ul>
+<li>いつ・どの文章を・どう変えたかが全部残る（<code>git log</code>）</li>
+<li>「英語版を全部書き直す」ような作業をブランチで進めて、納得してから反映できる</li>
+<li>間違えて消しても取り戻せる</li>
+<li>Claude Code に「この作品の説明をもっと簡潔にして」と頼める（ファイルなので直接編集できる）</li>
+</ul>
+
+<h3>では zod はどこで使うのか</h3>
+
+<p>ここが前回の説明で混ざっていた部分です。<strong>TypeScript の型は、ビルドが終わった瞬間に消えます。</strong></p>
+
+<pre><code>開発中           <b>型がある</b>  → 間違いを検出できる
+    ↓ ビルド
+実行中（ブラウザ） <span class="r">型は存在しない</span> → 何も検査されない</code></pre>
+
+<p>自分で書いたコンテンツは<strong>ビルドの時点で検査が終わっている</strong>ので、実行時にもう一度調べる必要がありません。だからコンテンツに zod は不要です。</p>
+
+<p>一方、<strong>Unity から実行時に飛んでくるメッセージ</strong>は話が違います。それはビルド時には存在しないデータで、しかも「古い Unity ビルド」から来るかもしれません。ここは実行時に形を確かめる必要があり、そのための道具が zod です。</p>
+
+<table>
+<tr><th>データ</th><th>いつ存在するか</th><th>検査</th></tr>
+<tr><td>作品情報・セリフ・UI 文字列</td><td>ビルド時に確定</td><td><b>TypeScript の型だけ</b>（zod 不要）</td></tr>
+<tr><td>Unity から届くメッセージ</td><td>実行時に外から来る</td><td><b>zod で実行時に検証</b></td></tr>
+</table>
+
+<div class="card ok">
+<p style="margin:0"><strong>D9 の修正案：</strong>「コンテンツは TypeScript のみ。zod はブリッジの受信部分だけで使う」。覚えることが 1 つ減り、書くコードも減ります。</p>
+</div>
+
+<hr>
+
+<h2>Next</h2>
+<p class="h2sub">確認していただきたいこと</p>
+
+<div class="card hi">
+<table style="margin:0">
+<tr><th>#</th><th>確認したいこと</th></tr>
+<tr><td><b>D3</b></td><td>Cloudflare Pages（または Netlify）に切り替えることに同意いただけるか。「アカウントを増やしたくないので GitHub Pages で」でも構いません — その場合 D4 は Gzip + Fallback ON になります</td></tr>
+<tr><td><b>D4</b></td><td>D3 が決まれば自動的に決まります</td></tr>
+<tr><td><b>D8</b></td><td>封筒方式・未知は無視・BRIDGE_READY の握手、という 3 点に納得いただけたか</td></tr>
+<tr><td><b>D9</b></td><td>「TypeScript のみ、zod はブリッジだけ」への簡素化に同意いただけるか</td></tr>
+</table>
+</div>
+
+<p>ご不明な点があれば、どこが分かりにくかったか教えてください。説明の粒度を変えて書き直します。すべて決まったら <code>ARCHITECTURE.md</code> の該当箇所を更新して、Phase 0 の具体的な手順（Unity のビルド設定を 1 つずつ）をお渡しします。</p>
+
+<hr>
+<p class="footnote">出典：<a href="https://developers.cloudflare.com/pages/platform/limits/">Cloudflare Pages limits</a> ／ <a href="https://vercel.com/docs/limits">Vercel limits</a> ／ <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits">GitHub Pages limits</a> ／ <a href="https://docs.unity3d.com/Manual/webgl-deploying.html">Unity Manual: Deploy a Web application</a><br>
+無料枠の条件は変わることがあります。実際に契約する前に各サービスの公式ページで再確認してください。</p>
+
+</div>
+</body>
+</html>

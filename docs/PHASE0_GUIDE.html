@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 0 実行手順 — 現状の CAFE を Web で動かして計測する</title>
+<style>
+:root{
+  --bg:#0e1014; --bg2:#14171d; --card:#181c23; --line:#262c36;
+  --fg:#e6e9ef; --mut:#98a2b3; --dim:#6b7480;
+  --acc:#e8a33d; --acc2:#5aa9e6; --ok:#4fb477; --warn:#e0a458; --bad:#e06c6c;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: light){
+  :root{ --bg:#f7f8fa; --bg2:#fff; --card:#fff; --line:#e3e6eb; --fg:#1a1d23; --mut:#5b6474; --dim:#8a919e; }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Segoe UI",sans-serif;
+  line-height:1.8; font-size:15px; -webkit-font-smoothing:antialiased}
+.wrap{max-width:880px; margin:0 auto; padding:0 24px 120px}
+header{padding:64px 0 32px; border-bottom:1px solid var(--line)}
+.eyebrow{font:600 11px/1 var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--acc); margin-bottom:16px}
+h1{font-size:30px; line-height:1.35; margin:0 0 12px; font-weight:700; letter-spacing:-.01em}
+.sub{color:var(--mut); margin:0; max-width:62ch}
+h2{font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--acc);
+   margin:68px 0 4px; font-family:var(--mono)}
+.h2sub{color:var(--dim); font-size:13px; margin:0 0 22px}
+h3{font-size:18px; margin:36px 0 10px; font-weight:650; letter-spacing:-.005em}
+h4{font-size:15px; margin:24px 0 8px; font-weight:650}
+p{margin:0 0 14px}
+a{color:var(--acc2)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin:18px 0}
+.card.hi{border-color:color-mix(in srgb,var(--acc) 45%,var(--line))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 45%,var(--line))}
+.card.bad{border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.kicker{font:600 10.5px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin-bottom:10px}
+table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px}
+th,td{text-align:left; padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font:600 11px/1.4 var(--mono); letter-spacing:.07em; text-transform:uppercase; color:var(--dim)}
+code{font:500 12.5px var(--mono); background:var(--bg2); padding:1.5px 5px; border-radius:4px; border:1px solid var(--line)}
+pre{background:var(--bg2); border:1px solid var(--line); border-radius:9px; padding:18px 20px;
+  overflow-x:auto; font:400 12.5px/1.7 var(--mono); color:var(--mut); margin:16px 0}
+pre code{background:none; border:0; padding:0; font-size:inherit}
+pre b{color:var(--fg); font-weight:600}
+pre .c{color:var(--dim)}
+pre .g{color:var(--ok)}
+ul,ol{margin:0 0 14px; padding-left:22px}
+li{margin:6px 0}
+.pill{display:inline-block; font:600 10.5px/1 var(--mono); padding:4px 8px; border-radius:20px; letter-spacing:.04em; white-space:nowrap}
+.p-ok{background:color-mix(in srgb,var(--ok) 16%,transparent); color:var(--ok)}
+.p-warn{background:color-mix(in srgb,var(--warn) 16%,transparent); color:var(--warn)}
+.p-bad{background:color-mix(in srgb,var(--bad) 16%,transparent); color:var(--bad)}
+.p-acc{background:color-mix(in srgb,var(--acc) 16%,transparent); color:var(--acc)}
+.q{border-left:2px solid var(--acc); padding:4px 0 4px 18px; margin:20px 0; color:var(--mut); font-size:14.5px}
+.q strong{color:var(--fg)}
+hr{border:0; border-top:1px solid var(--line); margin:52px 0}
+.footnote{color:var(--dim); font-size:12.5px}
+.stepnum{display:flex; align-items:baseline; gap:14px; margin:0 0 4px}
+.stepnum .n{font:700 13px var(--mono); color:var(--bg); background:var(--acc); width:26px; height:26px;
+  border-radius:50%; display:grid; place-items:center; flex:0 0 26px}
+.stepnum .t{font-size:20px; font-weight:700; letter-spacing:-.01em}
+.stepmeta{color:var(--dim); font-size:12.5px; font-family:var(--mono); margin:0 0 16px 40px}
+.setting{display:grid; grid-template-columns:1fr auto; gap:8px 16px; align-items:baseline;
+  padding:9px 0; border-bottom:1px solid var(--line)}
+.setting:last-child{border-bottom:0}
+.setting .k{color:var(--mut); font-size:13.5px}
+.setting .v{font:600 13px var(--mono); color:var(--fg); text-align:right}
+.setting .v.imp{color:var(--acc)}
+.chk{list-style:none; padding-left:0}
+.chk li{padding-left:26px; position:relative}
+.chk li:before{content:"☐"; position:absolute; left:0; color:var(--acc); font-size:15px}
+.record{background:var(--bg2); border:1px dashed var(--line); border-radius:9px; padding:18px 20px; margin:16px 0}
+.record table{margin:0}
+.record td:last-child{color:var(--dim); font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Phase 0 · 実行手順</div>
+  <h1>現状の CAFE を Web で動かして、<br>実機で計測する</h1>
+  <p class="sub">ここでやることは「作る」ではなく「測る」です。新しいコードは 1 行も書きません。今ある CafeScene をそのまま Web ビルドし、iPhone で開いて、数字を 4 つ記録します。その数字がホスティング（D3）を自動的に決めます。</p>
+</header>
+
+<h2>Good news</h2>
+<p class="h2sub">Phase 0 では Web アプリを作る必要すらありません</p>
+
+<div class="card ok">
+<p><strong>Unity の WebGL ビルド出力には、最初から <code>index.html</code> が含まれています。</strong>つまり、ビルドしたフォルダをそのまま静的サーバーに置けば、それだけでブラウザで動きます。</p>
+<p style="margin-bottom:0">Next.js もリポジトリも <strong>Phase 0 では不要</strong>です。それらは Phase 1 から。さらに言えば、最初の計測は<strong>デプロイすらせず、Mac のローカルサーバーと同じ Wi-Fi の iPhone だけで完結します</strong>。ホスティングを決めずに進める、という判断とも噛み合います。</p>
+</div>
+
+<div class="q">
+<strong>Phase 0 の全体像</strong><br>
+Unity でビルド → Mac でサイズを測る → Mac にローカルサーバーを立てる → 同じ Wi-Fi の iPhone で開く → 数字を記録する<br>
+<span style="color:var(--dim)">所要：Unity のビルド待ち時間を除けば、実作業は 30 分程度です。</span>
+</div>
+
+<hr>
+
+<h2>Before you start</h2>
+<p class="h2sub">先に知っておくべき 3 つのこと</p>
+
+<div class="card warn">
+<div class="kicker" style="color:var(--warn)">1. プラットフォーム切替に非常に時間がかかります</div>
+<p style="margin:0">Unity のプラットフォームを Web に切り替えると、<strong>887 MB のアセットが全部再インポートされます</strong>。テクスチャの圧縮形式が変わるためです。この処理は環境によりますが <strong>30 分〜2 時間以上</strong>かかることがあります。夜に始めて放置するのが現実的です。<br><br>
+再インポートの成果物は <code>Library/</code> に入りますが、<strong>ここは <code>.gitignore</code> で除外済みなので Git には一切影響しません</strong>。安心して切り替えてください。ただし<strong>ディスク容量は数 GB 増えます</strong>（現在すでに 6.2 GB）。空き容量を確認しておいてください。</p>
+</div>
+
+<div class="card warn">
+<div class="kicker" style="color:var(--warn)">2. 初回ビルドは失敗する前提でいてください</div>
+<p style="margin:0">Unity の Web ビルドは、初回に何らかのエラーで止まることがよくあります。よくある原因は Web で使えない API の参照、パッケージの非対応、IL2CPP のコンパイルエラーなどです。<strong>これは異常ではなく通常です。</strong>エラーが出たら、そのログをそのまま貼っていただければ一緒に潰します。<br><br>また、初回はコードのコンパイル（IL2CPP）に <strong>30〜90 分</strong>かかります。2 回目以降はキャッシュが効いて速くなります。</p>
+</div>
+
+<div class="card">
+<div class="kicker">3. 今回の設定は「最終形」ではありません</div>
+<p style="margin:0">これから指定する圧縮設定は、<strong>どのホスティングでも動く中立的な設定</strong>です。ホスティングを決めた後にもう一度ビルドし直して最適化します。Phase 0 の目的は最速の設定を出すことではなく、<strong>数字を得ること</strong>です。</p>
+</div>
+
+<hr>
+
+<h2>Step 1</h2>
+<p class="h2sub">Unity でビルドする</p>
+
+<div class="stepnum"><span class="n">1</span><span class="t">プラットフォームを Web に切り替える</span></div>
+<p class="stepmeta">File → Build Profiles</p>
+
+<p>Unity 6 では従来の Build Settings が <strong>Build Profiles</strong> に変わっています。<code>File → Build Profiles</code> を開き、左のリストから <strong>Web</strong> を選んで <strong>Switch Platform</strong> を押してください。</p>
+
+<p>ここで前述の長い再インポートが始まります。<strong>完了するまで Unity を触らずに待ってください。</strong></p>
+
+<div class="stepnum"><span class="n">2</span><span class="t">ビルドに含めるシーンを CafeScene だけにする</span></div>
+<p class="stepmeta">Build Profiles → Scene List</p>
+
+<p>同じ Build Profiles の画面に <strong>Scene List</strong> があります。ここを <strong><code>Assets/Scenes/CafeScene.unity</code> の 1 つだけ</strong>にしてください。</p>
+
+<div class="card">
+<p style="margin:0"><strong>これが最も重要な設定です。</strong>Scene List に含まれるシーンが参照しているアセットが、すべてビルドに焼き込まれます。<code>VillageScene</code> や <code>SampleScene</code> が混ざっていると、CAFE では使わない大量のアセットまでダウンロード対象になり、測る意味がなくなります。</p>
+</div>
+
+<div class="stepnum"><span class="n">3</span><span class="t">Player Settings を設定する</span></div>
+<p class="stepmeta">Build Profiles → Player Settings（または Edit → Project Settings → Player）</p>
+
+<h4>Publishing Settings（Web タブの中）</h4>
+<div class="card">
+<div class="setting"><span class="k">Compression Format</span><span class="v imp">Brotli</span></div>
+<div class="setting"><span class="k">Decompression Fallback</span><span class="v imp">ON（チェックを入れる）</span></div>
+<div class="setting"><span class="k">Data Caching</span><span class="v">ON（既定のまま）</span></div>
+<div class="setting"><span class="k">Name Files As Hashes</span><span class="v">OFF</span></div>
+</div>
+
+<p class="footnote"><strong>なぜこの組み合わせか：</strong>Brotli にするのは、生成される <code>.data</code> の Brotli 圧縮後サイズが分かれば、そのまま「Cloudflare Pages の 25 MiB 制限に収まるか」の判定に使えるからです。Fallback を ON にするのは、これがあればヘッダを設定できない環境（ローカルの簡易サーバーや GitHub Pages）でも動くからです。<strong>この設定なら、どこに置いても必ず動きます。</strong>その代わり起動は最も遅い条件になるので、計測値は「最悪ケース」だと考えてください。</p>
+
+<p class="footnote"><strong>Name Files As Hashes を OFF にする理由：</strong>ON だとファイル名がランダムな文字列になり、どれが <code>.data</code> なのか読み取れなくなります。サイズを測るのが目的なので OFF にします。</p>
+
+<h4>Other Settings</h4>
+<div class="card">
+<div class="setting"><span class="k">Scripting Backend</span><span class="v">IL2CPP（Web では固定）</span></div>
+<div class="setting"><span class="k">Managed Stripping Level</span><span class="v">既定のまま触らない</span></div>
+<div class="setting"><span class="k">Enable Exceptions</span><span class="v">既定のまま触らない</span></div>
+</div>
+
+<p class="footnote"><strong>前回の設計書では Managed Stripping を High にすると書きましたが、Phase 0 では触らないでください。</strong>High にするとコードは小さくなりますが、Visual Scripting のようにリフレクションを使うパッケージが動かなくなることがあります。Phase 0 の目的は「まず動くこと」なので、最適化は後回しにします。この設定を触るのは Phase 1 以降です。</p>
+
+<h4>Build Profiles 画面の下部</h4>
+<div class="card">
+<div class="setting"><span class="k">Development Build</span><span class="v imp">OFF（チェックを外す）</span></div>
+</div>
+<p class="footnote">Development Build が ON だとデバッグ情報が大量に埋め込まれ、サイズが数十 MB 単位で膨らみます。計測の邪魔になるので必ず外してください。</p>
+
+<div class="stepnum"><span class="n">4</span><span class="t">ビルドする</span></div>
+<p class="stepmeta">Build Profiles → Build</p>
+
+<p>出力先は <code>~/Unity/MyWorld/Build/WebGL/</code> にしてください。<code>Build/</code> は <code>.gitignore</code> で除外済みなので、Git に混ざる心配はありません。</p>
+
+<p>ここで 30〜90 分かかります。<strong>エラーで止まったらログを貼ってください。</strong></p>
+
+<hr>
+
+<h2>Step 2</h2>
+<p class="h2sub">サイズを測る</p>
+
+<p>ビルドが終わったら、Mac のターミナルで次を実行してください。</p>
+
+<pre><code>cd ~/Unity/MyWorld/Build/WebGL
+<span class="c"># 全体のサイズ</span>
+du -sh .
+<span class="c"># ファイルごとのサイズ（大きい順）</span>
+ls -lhS Build/</code></pre>
+
+<p><code>Build/</code> の中に、こういうファイルができているはずです。Decompression Fallback が ON なので拡張子は <code>.unityweb</code> になります。</p>
+
+<table>
+<tr><th>ファイル</th><th>中身</th><th>注目度</th></tr>
+<tr><td><code>WebGL.data.unityweb</code></td><td>3D モデル・テクスチャ・音・シーン</td><td><span class="pill p-bad">最重要</span> ここが全体の大半</td></tr>
+<tr><td><code>WebGL.wasm.unityweb</code></td><td>ゲームのコード（Unity エンジン込み）</td><td>だいたい 5〜10 MB</td></tr>
+<tr><td><code>WebGL.framework.js.unityweb</code></td><td>エンジンと JS をつなぐ層</td><td>小さい</td></tr>
+<tr><td><code>WebGL.loader.js</code></td><td>読み込みを担当（唯一圧縮されない）</td><td>小さい</td></tr>
+</table>
+
+<div class="card hi">
+<div class="kicker">記録するのはこの 2 つ</div>
+<div class="setting"><span class="k">① <code>.data.unityweb</code> のサイズ</span><span class="v">→ D3（ホスティング）を決める</span></div>
+<div class="setting"><span class="k">② <code>Build/</code> フォルダ全体のサイズ</span><span class="v">→ 訪問者のダウンロード総量</span></div>
+</div>
+
+<hr>
+
+<h2>Step 3</h2>
+<p class="h2sub">iPhone の実機で開く</p>
+
+<p>Mac に簡易サーバーを立てて、同じ Wi-Fi につないだ iPhone からアクセスします。Mac に最初から入っている Python を使うので、何もインストールする必要はありません。</p>
+
+<pre><code><span class="c"># ターミナル 1：サーバーを起動（ビルドフォルダの中で実行）</span>
+cd ~/Unity/MyWorld/Build/WebGL
+python3 -m http.server 8000</code></pre>
+
+<pre><code><span class="c"># ターミナル 2：Mac の LAN 内 IP アドレスを調べる</span>
+ipconfig getifaddr en0
+<span class="c"># 例: 192.168.1.23  ← 何も出なければ en1 も試す</span></code></pre>
+
+<p>iPhone の Safari で <code>http://192.168.1.23:8000</code>（上で出た IP）を開いてください。<strong>Mac と iPhone が同じ Wi-Fi につながっている必要があります。</strong></p>
+
+<div class="card">
+<p style="margin:0"><strong>ここでもし動かなくても、まだ諦めないでください。</strong>Mac のファイアウォールがブロックしている可能性があります（システム設定 → ネットワーク → ファイアウォール）。それでも駄目なら、この Step は飛ばして Mac の Chrome / Safari だけで計測し、実機確認は公開デプロイ後に回しても構いません。</p>
+</div>
+
+<h3>計測のしかた</h3>
+
+<ul>
+<li><strong>ロード時間</strong> — URL を開いてから 3D の画面が出るまでをストップウォッチで。<strong>2 回測ってください</strong>（1 回目 = 初回訪問者の体験、2 回目 = キャッシュが効いた状態）</li>
+<li><strong>クラッシュの有無</strong> — 途中でページが白くなったり勝手に再読み込みされたら、メモリ不足です。これが起きたかどうかを必ず記録してください</li>
+<li><strong>フレームレート</strong> — 正確な数値は不要です。<strong>「歩いたときにカクつくか」を体感で</strong>。滑らか / 少しカクつく / 明らかに重い、の 3 段階で十分です</li>
+<li><strong>操作できるか</strong> — スマホにはキーボードがないので、おそらく<strong>まったく動かせません</strong>。これは正常です（モバイル入力は Phase 1 で作ります）。画面が出て、カクついていないかだけ見てください</li>
+</ul>
+
+<hr>
+
+<h2>Record</h2>
+<p class="h2sub">記録シート — この 6 項目を埋めて返してください</p>
+
+<div class="record">
+<table>
+<tr><td style="width:55%">Switch Platform にかかった時間</td><td>約 ____ 分</td></tr>
+<tr><td>ビルドにかかった時間</td><td>約 ____ 分</td></tr>
+<tr><td><b>① <code>.data.unityweb</code> のサイズ</b></td><td>____ MB</td></tr>
+<tr><td><b>② <code>Build/</code> フォルダ全体</b></td><td>____ MB</td></tr>
+<tr><td><b>③ iPhone 初回ロード時間</b></td><td>____ 秒</td></tr>
+<tr><td><b>④ iPhone でクラッシュしたか</b></td><td>した / しなかった</td></tr>
+<tr><td>⑤ 動きの体感</td><td>滑らか / 少しカクつく / 明らかに重い</td></tr>
+<tr><td>⑥ ビルド中に出た警告・エラー</td><td>あれば貼り付け</td></tr>
+</table>
+</div>
+
+<hr>
+
+<h2>Interpretation</h2>
+<p class="h2sub">結果をどう読むか — ここで D3 が自動的に決まります</p>
+
+<h3>① <code>.data.unityweb</code> のサイズ → ホスティングが決まる</h3>
+<table>
+<tr><th>サイズ</th><th>意味</th><th>次の一手</th></tr>
+<tr><td><b>25 MiB 未満</b></td><td><span class="pill p-ok">理想的</span></td><td>Cloudflare Pages が使える（帯域無制限・最速）</td></tr>
+<tr><td><b>25〜60 MB</b></td><td><span class="pill p-warn">許容範囲</span></td><td>Netlify。または Cloudflare を使うためにアセット削減</td></tr>
+<tr><td><b>60〜100 MB</b></td><td><span class="pill p-bad">要対策</span></td><td>先にテクスチャ解像度を下げる。Phase 1 に進む前に</td></tr>
+<tr><td><b>100 MB 超</b></td><td><span class="pill p-bad">設計以前の問題</span></td><td>使用アセットの選定から見直し</td></tr>
+</table>
+
+<h3>③ ロード時間 → 体験が成立するか</h3>
+<p>今回は「最も遅い条件」での計測なので、<strong>実際の公開時にはここから 20〜40% 改善します</strong>（ヘッダを設定できるホストに置けば、転送量が減り、解凍がブラウザのネイティブ処理になるため）。</p>
+<table>
+<tr><th>計測値</th><th>判定</th></tr>
+<tr><td>30 秒未満</td><td><span class="pill p-ok">問題なし</span> このまま Phase 1 へ</td></tr>
+<tr><td>30〜60 秒</td><td><span class="pill p-warn">要工夫</span> ホスティング最適化 + ローディング画面の作り込みで許容範囲に</td></tr>
+<tr><td>60 秒超</td><td><span class="pill p-bad">対策必須</span> Phase 1 の前にアセット削減</td></tr>
+</table>
+
+<h3>④ クラッシュ → 最も深刻な問題</h3>
+<div class="card bad">
+<p style="margin:0">iPhone でクラッシュする場合、<strong>訪問者からは「壊れたサイト」にしか見えません</strong>。サイズ以上に優先して対処すべき問題です。この場合は Player Settings のメモリ設定とテクスチャ解像度を一緒に詰めます。</p>
+</div>
+
+<hr>
+
+<h2>After</h2>
+<p class="h2sub">Phase 0 の後にやること</p>
+
+<ol>
+<li><strong>結果を共有していただく</strong> — 記録シートの 6 項目</li>
+<li><strong>D3 を確定する</strong> — ①の数字で自動的に決まります</li>
+<li><strong>公開デプロイ</strong> — 決まったホスティングに置いて、公開 URL でもう一度確認（ここは私が手順を用意します）</li>
+<li><strong>設計書を更新</strong> — 計測値を <code>ARCHITECTURE.md</code> に追記して、Phase 1 の前提を確定させる</li>
+<li><strong>Phase 1 着手</strong> — <code>EVENT_SCHEMA.md</code> の確定 → Unity Bridge → Web Bridge の順</li>
+</ol>
+
+<div class="card hi">
+<div class="kicker">私の側で先に進めておけること</div>
+<p style="margin:0">Unity のビルド待ちの間、ご希望があれば次を並行して用意できます。どちらも Phase 0 の結果に依存しません。</p>
+<ul style="margin:12px 0 0">
+<li><code>docs/EVENT_SCHEMA.md</code> — Unity と Web が交換するメッセージの契約書（Phase 1 の最初の作業）</li>
+<li>Web リポジトリの雛形 — Next.js の初期構成一式</li>
+</ul>
+</div>
+
+<hr>
+<p class="footnote">つまずいたら、エラーログでも画面のスクリーンショットでも、そのまま貼ってください。Unity の設定画面は バージョンによって項目の位置が変わることがあるので、見つからない項目があればその旨を伝えていただければ探します。<br><br>
+出典：<a href="https://docs.unity3d.com/Manual/webgl-building.html">Unity Manual: Build your Web application</a> ／ <a href="https://docs.unity3d.com/Manual/webgl-deploying.html">Unity Manual: Deploy a Web application</a> ／ <a href="https://developers.cloudflare.com/pages/platform/limits/">Cloudflare Pages limits</a></p>
+
+</div>
+</body>
+</html>
