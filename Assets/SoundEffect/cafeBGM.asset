@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fec18aab5cd54c418d099bad5b136d6, type: 3}
+  m_Name: cafeBGM
+  m_EditorClassIdentifier: Assembly-CSharp::BgmTrack
+  clips:
+  - {fileID: 8300000, guid: 224dfaf8f940a499f810b3989674242d, type: 3}
+  - {fileID: 8300000, guid: e8bd47d1efc2b4c52827ae6307444e20, type: 3}
+  - {fileID: 8300000, guid: 42e58193f8d3442efb32cc93d126a11f, type: 3}
+  playMode: 0
+  loop: 1
+  gapBetweenClips: 0
+  volume: 1
+  startTime: 0
+  defaultFadeDuration: 1.5
