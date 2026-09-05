@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
-using NUnit.Framework.Constraints;
 
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Rigidbody))]
