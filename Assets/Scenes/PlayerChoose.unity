@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!137 &115231433 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 7175233516318436200, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 360291899}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &213663161 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1312769405409731794, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
@@ -151,7 +156,51 @@ MonoBehaviour:
           m_StringArgument: Hello
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 2095844811}
+        m_TargetAssemblyTypeName: HoverScaleEffect, Assembly-CSharp
+        m_MethodName: ScaleUp
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onHoverExit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2095844811}
+        m_TargetAssemblyTypeName: HoverScaleEffect, Assembly-CSharp
+        m_MethodName: ScaleDown
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &213663169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 213663161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 993eb636044dead4da2a9267e86e2312, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterChoiceButton
+  characterId: skaterFemaleA
+  characterMaterial: {fileID: 2100000, guid: e75db0658fe11ee4e9332681fbed63fe, type: 2}
+  sourceRenderer: {fileID: 1762619206}
+  nextSceneName: Cafe
+  delayBeforeLoad: 0.4
+  onSelected:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1001 &360291899
@@ -230,6 +279,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6329800037248928274, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6964156571065158487, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      propertyPath: m_Height
+      value: 4.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6964156571065158487, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      propertyPath: m_Radius
+      value: 1.22
+      objectReference: {fileID: 0}
+    - target: {fileID: 6964156571065158487, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      propertyPath: m_Center.y
+      value: 1.66
+      objectReference: {fileID: 0}
+    - target: {fileID: 6964156571065158487, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      propertyPath: m_Center.z
+      value: 0.29
+      objectReference: {fileID: 0}
+    - target: {fileID: 6964156571065158487, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7175233516318436200, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -256,6 +329,15 @@ PrefabInstance:
     - {fileID: 3064887550003713564, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2643957079837899464, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 679209048}
+    - targetCorrespondingSourceObject: {fileID: 1312769405409731794, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1615543561}
+    - targetCorrespondingSourceObject: {fileID: 1312769405409731794, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1615543562}
     - targetCorrespondingSourceObject: {fileID: 927682965477987874, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
       insertIndex: -1
       addedObject: {fileID: 360291902}
@@ -283,6 +365,55 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnimatorTriggerHandler
   animator: {fileID: 360291900}
+--- !u!1 &679209046 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2643957079837899464, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 360291899}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &679209047 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6329800037248928274, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 360291899}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &679209048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 679209046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9622aa5121b4c2438d7e9d124747fba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HoverScaleEffect
+  target: {fileID: 679209047}
+  hoverScale: 1.2
+  duration: 0.15
+  ease:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1045124999
 GameObject:
   m_ObjectHideFlags: 0
@@ -488,9 +619,15 @@ PrefabInstance:
     - {fileID: 3064887550003713564, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2643957079837899464, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2095844811}
     - targetCorrespondingSourceObject: {fileID: 1312769405409731794, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
       insertIndex: -1
       addedObject: {fileID: 213663165}
+    - targetCorrespondingSourceObject: {fileID: 1312769405409731794, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 213663169}
     - targetCorrespondingSourceObject: {fileID: 927682965477987874, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1273540570}
@@ -518,6 +655,90 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnimatorTriggerHandler
   animator: {fileID: 1273540567}
+--- !u!1 &1615543557 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1312769405409731794, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 360291899}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1615543561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1615543557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9748d7846fbc5640ad1aa079a3c8219, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HoverEventTrigger
+  onHoverEnter:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 360291902}
+        m_TargetAssemblyTypeName: AnimatorTriggerHandler, Assembly-CSharp
+        m_MethodName: FireTrigger
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Hello
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 679209048}
+        m_TargetAssemblyTypeName: HoverScaleEffect, Assembly-CSharp
+        m_MethodName: ScaleUp
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onHoverExit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 679209048}
+        m_TargetAssemblyTypeName: HoverScaleEffect, Assembly-CSharp
+        m_MethodName: ScaleDown
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1615543562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1615543557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 993eb636044dead4da2a9267e86e2312, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterChoiceButton
+  characterId: skaterMaleA
+  characterMaterial: {fileID: 2100000, guid: 7be5e77ca6c88e14ca95f576748f3a0b, type: 2}
+  sourceRenderer: {fileID: 115231433}
+  nextSceneName: Cafe
+  delayBeforeLoad: 0.4
+  onSelected:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!137 &1762619206 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 7175233516318436200, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 1273540565}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1888730076
 GameObject:
   m_ObjectHideFlags: 0
@@ -733,7 +954,7 @@ Transform:
   m_GameObject: {fileID: 1957358164}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: -0.61, y: 1.9, z: -4.93}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -799,6 +1020,55 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_MaxRayIntersections: 0
+--- !u!1 &2095844809 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2643957079837899464, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 1273540565}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2095844810 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6329800037248928274, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 1273540565}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2095844811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2095844809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9622aa5121b4c2438d7e9d124747fba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HoverScaleEffect
+  target: {fileID: 2095844810}
+  hoverScale: 1.2
+  duration: 0.15
+  ease:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
