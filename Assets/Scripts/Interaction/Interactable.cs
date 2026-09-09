@@ -32,6 +32,12 @@ public abstract class Interactable : MonoBehaviour
     // 今このオブジェクトを選択できるか。着火済みで対象外にしたい場合などに override する。
     public virtual bool CanActivate => isActiveAndEnabled;
 
+    // 選択されたことを OBJECT_SELECTED として Web に送るか。
+    // false にするのは「選択後の進行を Unity 側の演出が引き取る」もの（カフェの NPC など）。
+    // そういうものは代わりに DIALOGUE_REQUESTED を送るので、両方送ると Web 側で二重に反応する。
+    // docs/EVENT_SCHEMA.md §4。
+    public virtual bool NotifyWebOnSelect => true;
+
     // 実際の演出。Interactor から呼ばれる。
     public abstract void OnActivate();
 

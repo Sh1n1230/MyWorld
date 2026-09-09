@@ -14,9 +14,16 @@ public class SignalInteractable : Interactable
     // 着火演出・アニメーション再生など、シーン側で繋ぐ処理。
     public UnityEvent onActivate;
 
+    [Header("Web")]
+    // OBJECT_SELECTED を Web に送るか。選択後の進行を Unity 側の演出が引き取るもの
+    // （カフェの NPC のタバコ）は false にする。docs/EVENT_SCHEMA.md §4。
+    [SerializeField] bool notifyWebOnSelect = true;
+
     bool activated;
 
     public bool Activated => activated;
+
+    public override bool NotifyWebOnSelect => notifyWebOnSelect;
 
     public override bool CanActivate {
         get {

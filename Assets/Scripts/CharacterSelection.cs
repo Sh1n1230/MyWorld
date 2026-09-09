@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -14,10 +15,23 @@ public static class CharacterSelection
 
     public static bool HasSelection => Material != null;
 
+    /// <summary>選択されたときの通知。WebBridge が購読して CHARACTER_SELECTED を Web へ送る。</summary>
+    public static event Action<string> Selected;
+
+    // Enter Play Mode の domain reload を切っていても、前回の購読者が残らないようにする。
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatics()
+    {
+        Selected = null;
+        Id = null;
+        Material = null;
+    }
+
     public static void Select(string id, Material material)
     {
         Id = id;
         Material = material;
+        if (Selected != null) Selected(id);
     }
 
     public static void Clear()

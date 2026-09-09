@@ -1,10 +1,10 @@
 # Interaction — インタラクション基盤
 
-`docs/ARCHITECTURE.md` §5.2 / §5.3 / §10.3 の実装。
+`docs/ARCHITECTURE.md` §4 / §6 の実装。Web との契約は `docs/EVENT_SCHEMA.md`。
 
 ## 設計の前提（これを外すと方針違反になる）
 
-**Unity は文字を一切持たない**（判断1 / D5）。`Interactable` が持つのは `id` と `labelKey` だけで、
+**Unity は文字を一切持たない**（D1）。`Interactable` が持つのは `id` と `labelKey` だけで、
 実際に表示する文章は Web(DOM) 側が `labelKey` から引く。ここに日本語の台詞やラベルを
 直接書き始めたら設計が壊れていると思ってよい。
 
@@ -12,11 +12,11 @@
 
 | スクリプト | 付ける場所 | 役割 |
 |---|---|---|
-| `Interactable` | （abstract） | id / labelKey / hintRadius / focusRadius を持つ基底。docs §5.3 |
+| `Interactable` | （abstract） | id / labelKey / hintRadius / focusRadius / NotifyWebOnSelect を持つ基底 |
 | `InteractableRegistry` | （static） | シーン内の一覧と、正面かつ範囲内の最良候補の探索 |
 | `ProximityInteractor` | プレイヤー | 正面の候補を選び、E で選択。Mobile の近接ボタンもこの候補に連動する |
 | `PointerInteractor` | プレイヤー | PC 用。マウスの hover を追い、左クリックで選択 |
-| `InteractionSignals` | （static） | Interactor が出す通知の集約点。WebBridge がここを購読する予定 |
+| `InteractionSignals` | （static） | Interactor が出す通知の集約点。`Portfolio.Web.WebBridge` が `InRangeChanged` / `ObjectSelected` を購読する（`HoverChanged` は購読しない） |
 | `SignalInteractable` | 対象 | 一番単純な実装。UnityEvent を呼ぶだけ |
 | `DevPreview/*` | （Editor 専用） | Web ができるまでの見た目確認用。ビルドに含まれない |
 

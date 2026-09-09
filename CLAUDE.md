@@ -8,17 +8,25 @@ Unity 6 (6000.6.0f1) / URP。**Interactive 3D Portfolio** の Unity 側リポジ
 訪問者が CAFE → VILLAGE → FACTORY を歩き回って作者のポートフォリオを発見していく Web 体験の、
 「世界」を描く部分を担当する。
 
-**設計の正本は `docs/ARCHITECTURE.md`。実装に入る前に必ず読むこと。**
-特に次の 3 つはこのリポジトリのほぼ全ての判断の前提になっている:
+**設計の正本は `docs/ARCHITECTURE.md`（v2）。実装に入る前に必ず読むこと。**
+Unity ↔ Web の通信契約は `docs/EVENT_SCHEMA.md`（Web リポジトリと共有する契約）。
+構想・方向性は `docs/VISION.md` — **こちらは決定ではないので、実装の根拠にしてはいけない。**
+v1 とその周辺資料は `docs/archive/` にある（歴史的記録。参照しない）。
 
-- **判断1 / D5 — Unity は文字を一切持たない。** 台詞も説明文も UI 文字列も Web(DOM) が描く。
-  Unity が持つのは `id` と `labelKey` だけ。TMP の日本語フォントアトラスは
-  「明示的にやらない」と決めてある（§14.3）。
-- **判断2 / D6 — Unity インスタンスは一度ロードしたらアンマウントしない。**
-  情報表示は DOM オーバーレイ + URL 同期。
-- **D10 — Phase 1 のスコープは CAFE のみ、インタラクタブル 1 個、対話 UI 1 種。**
+次の 4 つはこのリポジトリのほぼ全ての判断の前提になっている:
 
-人間向けの要約は `docs/PORTFOLIO_DESIGN.html`、Phase 0 の手順は `docs/PHASE0_GUIDE.html`。
+- **D1 — Unity は文字を一切持たない。** 台詞も説明文も UI 文字列も Web(DOM) が描く。
+  Unity が持つのは `id` と `labelKey` だけ。TMP の日本語フォントアトラスは明示的にやらない。
+  現状 `PlayerChoose.unity` / `Cafe.unity` ともにテキストは **0 件**。この状態を壊さないこと。
+  この判断を守るため、`SET_LANGUAGE` イベントは**意図的に存在しない**（Unity に言語を教えない）。
+- **D2 — Unity インスタンスは一度ロードしたらアンマウントしない。**
+  情報表示は DOM オーバーレイ + URL 同期。シーン遷移は Unity 内で完結する。
+- **D4 — 3D 世界のスクリーンリーダー対応はしない。** Unity WebGL の canvas は
+  アクセシビリティツリーを持たず、`UnityEngine.Accessibility` は WebGL 対象外。
+  アクセシブルな経路は Phase 2 の「静的簡易版」が担う。
+- **Phase 1 のスコープ** — CAFE のみ、interactable 2 個
+  （`cafe.npc.smoker.cigarette` / `cafe.exhibit.penguin`）、対話 UI 1 種、**非公開**。
+  カフェの interactable は最終的にも上限 4 個。
 
 ## Unity-Specific Workflow
 
@@ -48,8 +56,10 @@ docs §5.2 / §5.3 / §10.3 の実装。詳細は `Assets/Scripts/Interaction/RE
 - **`ProximityInteractor.cs`** — プレイヤーに付く。正面の候補を選び E で選択。`Pause()`/`Resume()`
   が Web の `SET_PAUSED` に対応。
 - **`PointerInteractor.cs`** — PC 用。マウス hover + 左クリック。対象にコライダーが要る。
-- **`InteractionSignals.cs`** — Interactor の通知の集約点。WebBridge（未実装）がここを購読する。
-  docs §7.3 の `HOVER_CHANGED` / `INTERACTABLE_IN_RANGE` / `OBJECT_SELECTED` と 1:1。
+- **`InteractionSignals.cs`** — Interactor の通知の集約点。`WebBridge` がここを購読する。
+  **購読するのは `InRangeChanged` / `ObjectSelected` の 2 つだけ。**
+  `HoverChanged` は購読しない — `HOVER_CHANGED` イベントは作らないと決めてある
+  （PC の hover は Unity 内のアウトライン表現だけで足りるため）。
 - **`DevPreview/`** — `#if UNITY_EDITOR` 限定のプレビュー UI。ビルドに含まれない。
   文字列は `Assets/Editor/DevStringTable.asset`（Editor 配下なのでビルド対象外）から引く。
 
@@ -76,8 +86,19 @@ docs §5.2 / §5.3 / §10.3 の実装。詳細は `Assets/Scripts/Interaction/RE
   演出中は `SceneIntroSequence.IsPlaying` が true になり、Interactor はその間止まる。
 - `Assets/Scripts/MenuController.cs` — Esc メニュー。
 - `Assets/Scripts/DevSettings.cs` — `SkipIntro` など開発用フラグ。
-- `Assets/Animations/CigaretteSmokeController.cs` — 喫煙パーティクルの制御。
-  docs §10.5 では `Assets/Scripts/Cafe/` へ移す予定。
+- `Assets/Scripts/Cafe/CigaretteSmokeController.cs` — 喫煙パーティクルの制御。
+
+### Web Bridge（`Assets/Scripts/Web/`）
+
+- **`WebBridge.cs`** — Unity ↔ Web の唯一の窓口。`DontDestroyOnLoad` の GameObject `WebBridge`
+  に付く。**`SendMessage` の受け口はこの 1 つだけ**（`WebBridge.Receive`）。
+  `InteractionSignals` を購読して Envelope に詰め替える。
+  未知の `type` は warn して無視する — **絶対に例外を投げないこと**（前方互換のため）。
+- **`Assets/Plugins/WebGL/PortfolioBridge.jslib`** — Unity → Web。
+  `window.dispatchEvent(new CustomEvent("unity:message", { detail }))` を投げる。
+- エディタ実行時は `.jslib` を呼ばず `Debug.Log` に出るので、Editor だけでも配線を確認できる。
+- **イベントは全 11 種。増やす前に `docs/EVENT_SCHEMA.md` を読み、
+  「Web 側だけで解決できないか」を必ず疑うこと。**
 
 ### Input
 
@@ -93,14 +114,23 @@ Input System 1.20.0。`Assets/CharacterController/Assets/CharacterControler/Inpu
 
 | シーン | 状態 |
 |---|---|
-| `Assets/Scenes/CafeScene.unity` | メイン。Phase 1 の対象。Build Settings で有効 |
-| `Assets/Scenes/VillageScene.unity` | Phase 3。今は触らない |
-| `Assets/Scenes/FactoryScene.unity` | Phase 3。今は触らない |
-| `Assets/Scenes/SampleScene.unity` | 使っていない。docs §10.1 で Build Settings から外す予定 |
+| `Assets/Scenes/PlayerChoose.unity` | **起動シーン。** キャラ選択。Build Settings で有効 |
+| `Assets/Scenes/Cafe/Cafe.unity` | メイン。Phase 1 の対象。Build Settings で有効 |
+| `Assets/Scenes/Village.unity` | Phase 4。今は触らない |
+| `Assets/Scenes/Factory.unity` | Phase 4。今は触らない |
 
-`Assets/Prefabs/Player.prefab` が全シーン共通のプレイヤー。
+`EditorBuildSettings.asset` に**存在しない `SampleScene.unity` への死んだ参照**が残っている
+（`enabled: 0`）。Phase 1 で削除する。
+
+`Assets/Prefab/Player.prefab` が全シーン共通のプレイヤー。
 中身は `FullCharacter3rdPerson.prefab`（= `Camera3rdPerson` + `Character3rdPerson`）に
 Kenney の `characterMedium` を差し込んだもの。元の `Visuals` と `DebugCube` は無効化済み。
+`PlayerChoose` で選んだマテリアルは `CharacterSelection`（static）→ `PlayerMaterialApplier`
+（Player.prefab に付く）の経路で反映される。キャラは 2 体、**見た目だけで意味は持たせない**。
+
+`Cafe.unity` の中身: NPC 1 体（着席アイドル）、`SignalInteractable` 1 個
+（`cafe.npc.smoker.cigarette`）、ParticleSystem 1 個（煙）、`SceneIntroSequence`、
+`BgmSceneTrigger`。**専用カメラは無く、NavMesh も未ベイク。**
 
 ## Key Packages
 
