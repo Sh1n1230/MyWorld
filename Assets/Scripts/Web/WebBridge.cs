@@ -85,9 +85,14 @@ namespace Portfolio.Web
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
+#if UNITY_WEBGL && !UNITY_EDITOR
             // 既定は音声 OFF（docs/ARCHITECTURE.md §3.4）。Web が SET_AUDIO_MUTED で解除する。
             muted = true;
-            AudioListener.volume = 0f;
+#else
+            // Editor / 非 WebGL には解除してくれる Web がいないので鳴らしておく。
+            muted = false;
+#endif
+            AudioListener.volume = muted ? 0f : 1f;
 
             InteractionSignals.InRangeChanged += OnInRangeChanged;
             InteractionSignals.ObjectSelected += OnObjectSelected;
