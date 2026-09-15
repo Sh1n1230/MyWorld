@@ -44,6 +44,15 @@ namespace Portfolio.Web
         /// <summary>SET_AUDIO_MUTED。</summary>
         public static event Action<bool> AudioMutedChanged;
 
+#if !UNITY_WEBGL || UNITY_EDITOR
+        /// <summary>
+        /// **開発専用の出口。** Editor で Play しているときに、本来 .jslib が受け取るはずの封筒を
+        /// そのまま渡す。EditorWebLink がこれを購読して中継（sh1n1230.dev/scripts/dev-bridge.mjs）へ流し、
+        /// 開発中の Web ページと直結させる。WebGL ビルドにはこの経路は存在しない。
+        /// </summary>
+        public static event Action<string> DevEmitted;
+#endif
+
         bool paused;
         bool muted;
         // BeforeSceneLoad で生成されるため最初のシーンでは sceneLoaded も Start も両方走る。
@@ -61,6 +70,9 @@ namespace Portfolio.Web
             DialogueEnded = null;
             PausedChanged = null;
             AudioMutedChanged = null;
+#if !UNITY_WEBGL || UNITY_EDITOR
+            DevEmitted = null;
+#endif
             Instance = null;
         }
 
@@ -148,6 +160,9 @@ namespace Portfolio.Web
 #else
             // エディタと非 WebGL ビルドでは .jslib が無いので、配線の確認用にログへ出す。
             Debug.Log("[WebBridge] → Web  " + json);
+            // 開発専用リンク（EditorWebLink）がここを拾って中継に流す。
+            // ログと違い、こちらは実際に Web の DOM まで届く。
+            if (DevEmitted != null) DevEmitted(json);
 #endif
         }
 
