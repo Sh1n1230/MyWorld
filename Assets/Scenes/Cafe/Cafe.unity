@@ -2457,7 +2457,8 @@ Transform:
   m_LocalPosition: {x: -0.19999981, y: 2.8199997, z: 0.46}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1050370558}
   m_Father: {fileID: 108374234}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!199 &615645074
@@ -6608,6 +6609,84 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 180, y: 0, z: 0}
+--- !u!1 &822760802
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 822760805}
+  - component: {fileID: 822760804}
+  - component: {fileID: 822760803}
+  m_Layer: 0
+  m_Name: CafeSequence
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &822760803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 822760802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33366242b6163484d99e37fac3ba1a43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Portfolio.Cafe.CafeSequence
+  sequenceId: cafe.intro
+  cigaretteInteractableId: cafe.npc.smoker.cigarette
+  dialogueId: cafe.intro
+  speakerId: cafe.npc.smoker
+  cutscene: {fileID: 822760804}
+  focusTarget: {fileID: 876879696}
+  smokeTarget: {fileID: 1050370558}
+  smoke: {fileID: 108374235}
+  npcAnimator: {fileID: 108374233}
+  npcLightTrigger: Light
+  focusDuration: 0.6
+  lightingDuration: 1.2
+  smokeDuration: 2.5
+  titleHold: 2.5
+  releaseDuration: 0.8
+--- !u!114 &822760804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 822760802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f63d901651ff3a4dab0273c1dd9339a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Portfolio.Cafe.CigaretteCutscene
+  cam: {fileID: 1797960098}
+  disableDuringCutscene:
+  - {fileID: 1797960097}
+  focusOffset: {x: 0.55, y: 0.15, z: 1.1}
+  smokeOffset: {x: 0.9, y: 0.1, z: 1.6}
+  lookAtHeight: 0
+--- !u!4 &822760805
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 822760802}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &835165004 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 613feb4703b6f4c48a8ab2907ac2a9df, type: 3}
@@ -6957,7 +7036,7 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
-  notifyWebOnSelect: 1
+  notifyWebOnSelect: 0
 --- !u!1001 &897079307
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7946,6 +8025,37 @@ MonoBehaviour:
   priority: 0
   fadeInDuration: -1
   fadeOutDuration: -1
+--- !u!1 &1050370557
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1050370558}
+  m_Layer: 0
+  m_Name: SmokeTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1050370558
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1050370557}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 615645073}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1103580387
 GameObject:
   m_ObjectHideFlags: 0
@@ -7955,6 +8065,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1103580388}
+  - component: {fileID: 1103580390}
+  - component: {fileID: 1103580389}
   m_Layer: 0
   m_Name: penguin
   m_TagString: Untagged
@@ -7978,6 +8090,49 @@ Transform:
   - {fileID: 453481511}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -51.803, z: 0}
+--- !u!65 &1103580389
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1103580387}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.7123832, y: 0.96639633, z: 0.71831316}
+  m_Center: {x: 0.00000022910535, y: 0.48335934, z: 0.027209342}
+--- !u!114 &1103580390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1103580387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a566058c7c4b53a7d3914d1083e6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SignalInteractable
+  id: cafe.exhibit.penguin
+  labelKey: cafe.penguin.label
+  hintRadius: 4
+  focusRadius: 2
+  focusPoint: {fileID: 0}
+  oneShot: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+  notifyWebOnSelect: 1
 --- !u!43 &1152247942
 Mesh:
   m_ObjectHideFlags: 0
@@ -10488,6 +10643,22 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+--- !u!114 &1797960097 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2719976677259666345, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 1797960096}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ddadfe63a336ef47a23e660ba9dc512, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
+--- !u!20 &1797960098 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 467838990517910089, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 1797960096}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1822553950
 GameObject:
   m_ObjectHideFlags: 0
@@ -11772,3 +11943,4 @@ SceneRoots:
   - {fileID: 1180709565}
   - {fileID: 567529021}
   - {fileID: 1103580388}
+  - {fileID: 822760805}
