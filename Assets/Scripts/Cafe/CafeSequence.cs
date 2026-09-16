@@ -61,6 +61,16 @@ namespace Portfolio.Cafe
 
         void Start()
         {
+            // **一度見た人には、この一連を二度やらない。** WELCOME TO MY WORLD は
+            // 初回だけのものなので、再訪者は最初から free（自由行動）で始める
+            // （docs/EVENT_SCHEMA.md §10）。もう一度見たい人は Web の「はじめから」。
+            if (WebSession.HasSeen(sequenceId))
+            {
+                started = true;
+                SetState(SequenceState.Free);
+                return;
+            }
+
             SetState(SequenceState.Entering);
         }
 

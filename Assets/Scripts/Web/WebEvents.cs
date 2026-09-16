@@ -17,11 +17,15 @@ namespace Portfolio.Web
         public const string DialogueRequested    = "DIALOGUE_REQUESTED";
         public const string SequenceState        = "SEQUENCE_STATE";
 
-        // ---- Web → Unity（4 種）----
+        // ---- Web → Unity（5 種）----
         public const string SetPaused            = "SET_PAUSED";
         public const string SetAudioMuted        = "SET_AUDIO_MUTED";
         public const string AdvanceDialogue      = "ADVANCE_DIALOGUE";
         public const string EndDialogue          = "END_DIALOGUE";
+        // 再訪時に「もう選んである / もう見た」を Unity へ伝える唯一の経路。
+        // Unity は localStorage を知らないので、これが無いと再訪者は文字のない
+        // PlayerChoose の前で止まる（docs/EVENT_SCHEMA.md §10）。
+        public const string RestoreSession       = "RESTORE_SESSION";
 
         // 意図的に存在しないもの: SET_LANGUAGE / GOTO_SCENE / HOVER_CHANGED / ERROR。
         // 理由は docs/EVENT_SCHEMA.md §5。増やす前に必ず読むこと。
@@ -115,8 +119,14 @@ namespace Portfolio.Web
     [Serializable] public class AdvanceDialoguePayload { public string dialogueId; public int lineIndex; public string emotion; }
     [Serializable] public class EndDialoguePayload     { public string dialogueId; }
 
+    // characterId が null / 空 = まだ選んでいない（＝「はじめから」もこれ）。
+    // seen = 見終わった sequenceId の一覧。カフェなら "cafe.intro"。
+    // **どちらも id だけで、文章は入らない（D1）。**
+    [Serializable] public class RestoreSessionPayload  { public string characterId; public string[] seen; }
+
     [Serializable] public class SetPausedEnvelope       { public int v; public string id; public string type; public SetPausedPayload payload;       public long ts; }
     [Serializable] public class SetAudioMutedEnvelope   { public int v; public string id; public string type; public SetAudioMutedPayload payload;   public long ts; }
     [Serializable] public class AdvanceDialogueEnvelope { public int v; public string id; public string type; public AdvanceDialoguePayload payload; public long ts; }
     [Serializable] public class EndDialogueEnvelope     { public int v; public string id; public string type; public EndDialoguePayload payload;     public long ts; }
+    [Serializable] public class RestoreSessionEnvelope  { public int v; public string id; public string type; public RestoreSessionPayload payload;  public long ts; }
 }

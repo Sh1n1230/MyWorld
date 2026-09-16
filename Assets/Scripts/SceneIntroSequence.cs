@@ -34,6 +34,12 @@ public class SceneIntroSequence : MonoBehaviour
     [Header("Events")]
     public UnityEvent onIntroComplete;
 
+    [Header("Web")]
+    // この sequenceId が RESTORE_SESSION の seen に入っていたら、演出を飛ばす。
+    // 一度見た人に毎回同じ入店演出を見せないため（docs/EVENT_SCHEMA.md §10）。
+    // 空にすれば「毎回見せる」になる。
+    [SerializeField] string skipIfSeenSequenceId = "cafe.intro";
+
     // 他システムから演出中かどうかを見るためのグローバルフラグ。
     public static bool IsPlaying { get; private set; }
 
@@ -45,7 +51,7 @@ public class SceneIntroSequence : MonoBehaviour
     void Awake() {
         IsPlaying = false;
 
-        if (DevSettings.SkipIntro) {
+        if (DevSettings.SkipIntro || Portfolio.Web.WebSession.HasSeen(skipIfSeenSequenceId)) {
             skipped = true;
             enabled = false;
             return;

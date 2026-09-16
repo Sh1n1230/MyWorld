@@ -116,9 +116,9 @@ Unity WebGL は `<canvas>` に描画するだけで、**DOM のアクセシビ�
   │                                    │
   ├─ キャラ選択（Unity: PlayerChoose）    │  （skip: character）
   │                                    │
+  ├─ 入店演出（Unity）                   │  （skip: seen に cafe.intro）
+  │                                    │
   └──────────────┬─────────────────────┘
-                 ▼
-            入店演出（Unity）
                  ▼
         自由行動（+ 音声トースト、初回のみ）
                  ▼
@@ -168,14 +168,19 @@ NPC のタバコ                 ペンギン（作品）
 
 ### 3.5 localStorage に保存するもの
 
-**この 4 つだけ。** カフェ内の進行状況（NPC と喋ったか等）は Phase 1 では保存しない。状態が増えるほど壊れる。
+**この 5 つだけ。** カフェ内の細かい進行（どの作品を見たか等）は Phase 1 では保存しない。状態が増えるほど壊れる。
 
 | キー | 用途 |
 |---|---|
 | `language` | 再訪時の初期選択 |
 | `character` | 再訪時にキャラ選択を飛ばす |
 | `surveyDone` | 再訪時にアンケートを飛ばす |
+| `seen` | 見終わった `sequenceId` の一覧。再訪時に入店演出と `WELCOME TO MY WORLD` を飛ばす |
 | `visitor_id` | `crypto.randomUUID()`。Phase 3 で DB に繋ぐときの結合キー |
+
+**記憶はここに一本化する。Unity 側には保存しない。** `PlayerPrefs` は WebGL でも動く（IndexedDB に載る）が、
+覚えている場所が 2 つになると「はじめから」で両方消さない限り食い違う。Unity へは起動のたびに
+`RESTORE_SESSION` で渡し、Unity はそれに合わせて状態を作り直す（`EVENT_SCHEMA.md` §10）。
 
 **Cookie は使わない。IP も取らない。** 送信もしない（Phase 3 まで）。
 

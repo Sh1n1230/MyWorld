@@ -47,9 +47,9 @@ Unity 側は `JsonUtility` で受け、**未知の `type` は warn して無視�
 
 ---
 
-## 3. イベント一覧（Phase 1 = 全 11 種）
+## 3. イベント一覧（Phase 1 = 全 12 種）
 
-**この 11 種がすべてである。** 増やしたくなったら、まず「Web 側だけで解決できないか」を疑うこと。
+**この 12 種がすべてである。** 増やしたくなったら、まず「Web 側だけで解決できないか」を疑うこと。
 
 ### 3.1 Unity → Web（7 種）
 
@@ -63,7 +63,7 @@ Unity 側は `JsonUtility` で受け、**未知の `type` は warn して無視�
 | 6 | `DIALOGUE_REQUESTED` | `{ dialogueId: string, speakerId: string \| null }` | Unity 側の演出が特定の対話を要求する（NPC のように、選択後の演出が Unity 主導のもの） |
 | 7 | `SEQUENCE_STATE` | `{ sequenceId: string, state: string }` | 演出の進行段階。Web はこれでタイトル演出などを出し入れする |
 
-### 3.2 Web → Unity（4 種）
+### 3.2 Web → Unity（5 種）
 
 | # | type | payload | 用途 |
 |---|---|---|---|
@@ -71,6 +71,7 @@ Unity 側は `JsonUtility` で受け、**未知の `type` は warn して無視�
 | 9 | `SET_AUDIO_MUTED` | `{ muted: boolean }` | ミュートボタン / 音声トーストの反映 |
 | 10 | `ADVANCE_DIALOGUE` | `{ dialogueId: string, lineIndex: number, emotion?: string }` | 対話送り。**進行の主導権は Web 側**（行数を知っているのは Web だから） |
 | 11 | `END_DIALOGUE` | `{ dialogueId: string }` | 対話終了。Unity は次の演出（着火など）に進む |
+| 12 | `RESTORE_SESSION` | `{ characterId: string \| null, seen: string[] }` | **`BRIDGE_READY` の直後に必ず 1 回送る。** 再訪者にキャラを選ばせず、見終わった演出を繰り返さないため（§10）。初回は `{ null, [] }` |
 
 ### 3.3 `sequenceId` / `state` の値（Phase 1）
 
@@ -161,7 +162,7 @@ Unity 側は `Interactable.NotifyWebOnSelect` でこれを表現している。
 | 落としたもの | 理由 |
 |---|---|
 | `SET_LANGUAGE` | Unity に文字が無い以上、言語を知る理由がない。持たせると「じゃあ Unity にも少しくらい文字を」という穴になる。**この設計を守るための欠落である** |
-| `GOTO_SCENE` | `PlayerChoose` → `Cafe` の遷移は Unity 内で完結する。Web が指図する必要がない |
+| `GOTO_SCENE` | `PlayerChoose` → `Cafe` の遷移は Unity 内で完結する。Web が指図する必要がない。再訪時に `PlayerChoose` を飛ばす件は `RESTORE_SESSION`（§10）で解いた — **シーンを指図するのではなく、状態を預けて Unity に決めさせる** |
 | `HOVER_CHANGED` | PC の hover は Unity 内のアウトライン表現だけで用が足りる。毎フレーム相当の頻度で JS を叩く価値がない |
 | `ERROR` | Unity 側の異常はコンソールに出す。Web に投げても Phase 1 では出し先がない |
 | Phase 2 以降のイベント（`OPEN_PROJECT` 等） | 使われないメッセージ定義は必ず腐る。**必要になった日に足す** |
@@ -255,28 +256,56 @@ Web が無い状態で `SET_PAUSED` などを試したいときは、Console か
 
 ---
 
-## 10. 未解決: 再訪時に Unity が PlayerChoose を飛ばせない
+## 10. 再訪時に何を飛ばすか（決定済み — 案 A を採用）
 
-**Web 実装中に見つかった、契約の穴。まだ決めていない。**
+### 何が問題だったか
 
 決定事項（ARCHITECTURE.md §3）では、再訪時は **言語選択だけ通し、アンケートとキャラ選択は飛ばす**。
-Web 側は `localStorage` の `character` を見て DOM のオーバーレイを出さずに済ませられる。
+Web は `localStorage` を見れば自分で判断できるが、**Unity は毎回 `PlayerChoose` から起動し、
+localStorage を知らない。** そのままでは再訪者が文字のない選択画面の前で止まる。
 
-ところが **Unity は毎回 `PlayerChoose` シーンから起動する。** Unity は localStorage を知らないので、
-「もう選んである」ことを知る手段が無い。結果、再訪した人は文字のない選択画面の前で止まる。
+### 決めたこと
 
-`GOTO_SCENE` は「Unity 内で完結するから不要」として意図的に落としたが、
-**この再訪の経路だけは Web しか答えを持っていない。**
+**`RESTORE_SESSION` を Web → Unity に 1 つ足す（イベントは 11 → 12 種）。**
 
-### 案
+```jsonc
+{ "characterId": "skater_male_a" | null, "seen": ["cafe.intro"] }
+```
 
-| 案 | 内容 | 損得 |
+- **`BRIDGE_READY` の直後に必ず 1 回送る。** 初回でも `{ null, [] }` を送る。
+  「送るときと送らないときがある」が一番壊れやすい。
+- `characterId` があれば Unity は `PlayerChoose` を自動で通過し、そのままカフェへ。
+- `seen` に `"cafe.intro"` があれば、**入店演出も、タバコから WELCOME TO MY WORLD までの
+  一連も再生しない。** 再訪者は最初から `free`（自由行動）で始まる。
+- 渡すのは id と id の配列だけなので **D1（Unity は文字を持たない）は無傷**。
+
+### 記憶の在り処は Web の localStorage。Unity は保存しない
+
+`PlayerPrefs` は WebGL でも動く（IndexedDB に載る）が、**使わない。**
+言語・アンケート・キャラを既に localStorage が持っている以上、Unity にも覚えさせると
+同じことを覚えている場所が 2 つになり、「はじめから」で両方消さないと食い違う。
+**Unity は起動のたびに `RESTORE_SESSION` を受け取って状態を作り直すだけ**にする。
+
+`seen` に `"cafe.intro"` を書き足すのは Web の役目（`SEQUENCE_STATE { title }` を受けたとき）。
+
+### 「はじめから」は Web が localStorage を消してページを読み直す
+
+Unity 側に「カフェから PlayerChoose へ戻す」経路は**作らない**。
+作れば、意図的に落とした `GOTO_SCENE`（§5）が名前を変えて戻ってくる。
+代償は Unity の再ロード（20〜60 秒）だが、めったに押されない操作なので引き受ける。
+
+### 採らなかった案
+
+| 案 | 内容 | 落とした理由 |
 |---|---|---|
-| **A** | `RESTORE_SESSION { characterId: string \| null }` を Web → Unity に 1 つ足す。`BRIDGE_READY` の直後に必ず送り、Unity は characterId があればマテリアルを適用して即カフェへ遷移する | イベントは 12 種になるが、Unity に文字は渡らない（id だけ）ので D1 は無傷。Phase 2 以降の「続きから」にもそのまま使える |
-| **B** | 再訪でもキャラ選択を毎回通す | イベントは 11 種のまま。ただし ARCHITECTURE.md §3 の決定と矛盾するので、そちらを直す必要がある |
-| **C** | キャラ選択を DOM に移す | Unity 側の `PlayerChoose` の実装が無駄になる。§6.5 の決定と矛盾する |
+| **B** | 再訪でもキャラ選択を毎回通す | ARCHITECTURE.md §3 の決定と矛盾する。イベントを 11 種に保つこと自体は目的ではない |
+| **C** | キャラ選択を DOM に移す | Unity 側の `PlayerChoose` が無駄になる。§6.5 の決定と矛盾する |
 
-**推奨は A。** `SET_LANGUAGE` を落とした理由（Unity に文字・言語を持たせない）はここには当てはまらず、
-渡すのは `characterId` という id 一つだけ。「11 種で固定」は目的ではなく、
-「使われないイベントを先回りで作らない」ための歯止めだったので、
-**実際に必要になったこれは足してよいはず** — ただし決めるのは榛さん。
+### Unity 側の実装
+
+| ファイル | 役割 |
+|---|---|
+| `Assets/Scripts/Web/WebSession.cs` | 受け取った `characterId` / `seen` の置き場。保存はしない |
+| `Assets/Scripts/CharacterAutoSelect.cs` | `PlayerChoose` に 1 つ置く。一致する `CharacterChoiceButton` を人が押したのと同じ経路で押す |
+| `SceneIntroSequence.skipIfSeenSequenceId` | `seen` に入っていれば入店演出を飛ばす |
+| `CafeSequence.Start` | `seen` に入っていれば `free` から始める |

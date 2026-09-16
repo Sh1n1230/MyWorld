@@ -43,6 +43,8 @@ namespace Portfolio.Web
         public static event Action<bool> PausedChanged;
         /// <summary>SET_AUDIO_MUTED。</summary>
         public static event Action<bool> AudioMutedChanged;
+        /// <summary>RESTORE_SESSION。内容は <see cref="WebSession"/> にも入るので、購読せず後から読んでもよい。</summary>
+        public static event Action<RestoreSessionPayload> SessionRestored;
 
 #if !UNITY_WEBGL || UNITY_EDITOR
         /// <summary>
@@ -70,6 +72,7 @@ namespace Portfolio.Web
             DialogueEnded = null;
             PausedChanged = null;
             AudioMutedChanged = null;
+            SessionRestored = null;
 #if !UNITY_WEBGL || UNITY_EDITOR
             DevEmitted = null;
 #endif
@@ -313,6 +316,16 @@ namespace Portfolio.Web
                     var env = JsonUtility.FromJson<EndDialogueEnvelope>(json);
                     if (env == null || env.payload == null) return;
                     if (DialogueEnded != null) DialogueEnded(env.payload);
+                    return;
+                }
+                case WebEventType.RestoreSession:
+                {
+                    var env = JsonUtility.FromJson<RestoreSessionEnvelope>(json);
+                    if (env == null || env.payload == null) return;
+                    // 置き場に入れるだけ。誰が何を飛ばすかは、受け取った側がそれぞれ決める
+                    // （PlayerChoose なら CharacterAutoSelect、カフェなら SceneIntroSequence）。
+                    WebSession.Apply(env.payload);
+                    if (SessionRestored != null) SessionRestored(env.payload);
                     return;
                 }
                 default:
