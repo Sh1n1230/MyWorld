@@ -269,7 +269,7 @@ localStorage を知らない。** そのままでは再訪者が文字のない�
 **`RESTORE_SESSION` を Web → Unity に 1 つ足す（イベントは 11 → 12 種）。**
 
 ```jsonc
-{ "characterId": "skater_male_a" | null, "seen": ["cafe.intro"] }
+{ "characterId": "skaterMaleA" | null, "seen": ["cafe.intro"] }
 ```
 
 - **`BRIDGE_READY` の直後に必ず 1 回送る。** 初回でも `{ null, [] }` を送る。
