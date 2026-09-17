@@ -23,7 +23,7 @@ v1 とその周辺資料は `docs/archive/` にある（歴史的記録。参照
   情報表示は DOM オーバーレイ + URL 同期。シーン遷移は Unity 内で完結する。
 - **D4 — 3D 世界のスクリーンリーダー対応はしない。** Unity WebGL の canvas は
   アクセシビリティツリーを持たず、`UnityEngine.Accessibility` は WebGL 対象外。
-  アクセシブルな経路は Phase 2 の「静的簡易版」が担う。
+  アクセシブルな経路は Phase 2 の「簡易版ポートフォリオ」が担う。
 - **Phase 1 のスコープ** — CAFE のみ、interactable 2 個
   （`cafe.npc.smoker.cigarette` / `cafe.exhibit.penguin`）、対話 UI 1 種、**非公開**。
   カフェの interactable は最終的にも上限 4 個。
@@ -128,9 +128,9 @@ Kenney の `characterMedium` を差し込んだもの。元の `Visuals` と `De
 `PlayerChoose` で選んだマテリアルは `CharacterSelection`（static）→ `PlayerMaterialApplier`
 （Player.prefab に付く）の経路で反映される。キャラは 2 体、**見た目だけで意味は持たせない**。
 
-`Cafe.unity` の中身: NPC 1 体（着席アイドル）、`SignalInteractable` 1 個
-（`cafe.npc.smoker.cigarette`）、ParticleSystem 1 個（煙）、`SceneIntroSequence`、
-`BgmSceneTrigger`。**専用カメラは無く、NavMesh も未ベイク。**
+`Cafe.unity` の中身: NPC 1 体（着席アイドル）、`SignalInteractable` 2 個
+（`cafe.npc.smoker.cigarette` / `cafe.exhibit.penguin`）、`CafeSequence`、ParticleSystem 1 個（煙）、
+`SceneIntroSequence`、`BgmSceneTrigger`。**専用カメラは無く、NavMesh も未ベイク。**
 
 ## Key Packages
 
