@@ -171,8 +171,9 @@ NPC のタバコ                 ペンギン（作品）
 
 - サイトを開いてからカフェに入るまでの間、**Web が**流す（言語選択とアンケートの間は Unity がまだ読み込み中で音を出せないため）。
 - 言語選択の「音を出す」チェックボックスは**必ず OFF から始める**。チェックした瞬間に鳴り始め、外すと止まる。チェック操作そのものが user gesture になる。
+- 曲は 2 曲。1 曲終わるごとに次へ進み、順番に回す。
 - カフェに入ったらフェードアウトし、以後は Unity の BGM が持つ。
-- 原曲は Web リポジトリの `audio/`（配信しない）。配信用の mp3 は `npm run audio:encode` で `public/audio/` に作る。
+- 原曲は Web リポジトリの `audio/`（配信しない）。配信用の mp3 は `npm run audio:encode` で `public/audio/`（`entrance-1.mp3` / `entrance-2.mp3`）に作る。
 
 ### 3.5 localStorage に保存するもの
 
