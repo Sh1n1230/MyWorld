@@ -47,7 +47,7 @@
 - `Assets/Scripts/Audio/` / `SceneIntroSequence.cs` / `MenuController.cs` / `DevSettings.cs`
 
 **2026-09-09 に `WebBridge` / `WebEvents` / `CafeSequence` / `CigaretteCutscene` / `PortfolioBridge.jslib` を追加した。**
-Editor での配線（`EVENT_SCHEMA.md` §9）とペンギンの設置は済んだ。**Unity 側で残っているのは L2 / L3 のヒント表現（§4.2）と店員（§4.1）。**
+Editor での配線（`EVENT_SCHEMA.md` §9）とペンギンの設置は済んだ。L2 / L3 のヒント表現（§4.2）も入った。**Unity 側で残っているのは店員（§4.1）。**
 
 ### 0.5 WebGL ビルド実測（2026-08-20 時点、PlayerChoose 追加前）
 
@@ -284,12 +284,17 @@ Editor での配線（`EVENT_SCHEMA.md` §9）は済んだ。
 ### 6.3 カフェの状態機械
 
 ```
-entering ─▶ explore ─▶ focusing ─▶ (Web: 対話 6〜8 行) ─▶ lighting ─▶ smoke ─▶ title ─▶ free
+entering ─▶ explore ─▶ focusing ─▶ (Web: 対話 6〜8 行) ─▶ (男をもう一度選ぶ = 火を貸す) ─▶ lighting ─▶ smoke ─▶ title ─▶ free
               ▲            │
               └────────────┘  （対象から離れる）
 ```
 
 各遷移で `SEQUENCE_STATE` を送る。**Unity は「Web が今どんな UI を出しているか」を知らない。**
+
+- **話しかける対象は座っている男**（NPC）。`Interactable` は男に付いていて、id は `cafe.npc.smoker.cigarette` のまま（距離の基準点だけタバコの位置）。
+- **対話を閉じても着火しない。** カメラは男に寄せたまま `focusing` に留まり、訪問者が男をもう一度クリック（または E）すると `lighting` に進む。状態は増やしていない — Web は「`focusing` かつ対話が出ていない」ことから火を貸す場面だと分かる。
+- `focusing` から `free` まではプレイヤーの移動を止める（`ProximityInteractor.LockMovement`）。カメラが固定されているため。
+- `lighting` に入った時点で男の `Interactable` を無効にし、光りとプロンプトを止める。
 
 ### 6.4 カメラ演出は手書きにする
 
@@ -424,7 +429,7 @@ CI での Unity ビルドは**行わない**（ライセンス設定の手間に
 1. `ARCHITECTURE.md` v2 / `VISION.md` / `EVENT_SCHEMA.md`
 2. ~~Unity: `WebBridge.cs` + `PortfolioBridge.jslib` + `InteractionSignals` への接続~~ ✅
 3. ~~Unity: `CafeSequence.cs` / `CigaretteCutscene.cs` → Editor で配線 / ペンギン配置~~ ✅
-   + 店員追加（会釈のみ）/ L2・L3 のヒント表現（§4.2）
+   + 店員追加（会釈のみ）/ ~~L2・L3 のヒント表現（§4.2）~~ ✅
 4. ~~Web: `Sh1n1230/sh1n1230.dev` 新規 + Next.js + Unity canvas 常駐~~ ✅
 5. ~~Web: 言語選択 → アンケート → キャラ選択オーバーレイ → 対話ボックス → タイトル演出~~ ✅ + ~~再訪（`RESTORE_SESSION`）~~ ✅ + 対話中の Esc（§7.4）
 6. Web: ミュートボタン / 音声トースト / 非対応時の簡易版ポートフォリオ（振り分け・連絡先。§4.3）

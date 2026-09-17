@@ -37,6 +37,7 @@ public class ProximityInteractor : MonoBehaviour
     InputAction interactAction;
     Interactable current;
     int pauseCount;
+    int movementLockCount;
     int inputBlockedFrame = -1;
 
     // Web からの SET_PAUSED、および対話中に true になる。
@@ -77,9 +78,10 @@ public class ProximityInteractor : MonoBehaviour
 
         if (interactAction != null) interactAction.Disable();
 
-        if (pauseCount > 0) {
+        if (pauseCount > 0 || movementLockCount > 0) {
             pauseCount = 0;
-            ApplyPause(false);
+            movementLockCount = 0;
+            ApplyMovement();
         }
     }
 
@@ -112,7 +114,7 @@ public class ProximityInteractor : MonoBehaviour
         pauseCount++;
         if (pauseCount == 1) {
             SetCurrent(null);
-            ApplyPause(true);
+            ApplyMovement();
         }
     }
 
@@ -120,20 +122,35 @@ public class ProximityInteractor : MonoBehaviour
         if (pauseCount == 0) return;
         pauseCount--;
         if (pauseCount == 0) {
-            ApplyPause(false);
+            ApplyMovement();
             inputBlockedFrame = Time.frameCount;
         }
     }
 
-    void ApplyPause(bool paused) {
-        if (paused && characterController != null) {
+    // 移動だけを止める。Pause と違い、候補の選択（E / クリック）は生きたまま。
+    // 演出でカメラを固定している間、プレイヤーが画面外へ歩いていかないようにするため（CafeSequence）。
+    // Pause と独立に数えるので、Web の SET_PAUSED が解けても移動は止まったまま。
+    public void LockMovement() {
+        movementLockCount++;
+        if (movementLockCount == 1) ApplyMovement();
+    }
+
+    public void UnlockMovement() {
+        if (movementLockCount == 0) return;
+        movementLockCount--;
+        if (movementLockCount == 0) ApplyMovement();
+    }
+
+    void ApplyMovement() {
+        bool stopped = pauseCount > 0 || movementLockCount > 0;
+        if (stopped && characterController != null) {
             // 入力スクリプトを止めるだけだと最後の移動ベクトルが残り続けるので明示的にゼロにする。
             characterController.InputMoveVector(Vector3.zero);
         }
 
         if (disableWhilePaused == null) return;
         foreach (MonoBehaviour behaviour in disableWhilePaused) {
-            if (behaviour != null) behaviour.enabled = !paused;
+            if (behaviour != null) behaviour.enabled = !stopped;
         }
     }
 
