@@ -1,17 +1,12 @@
-// インタラクト可能な対象のヒント表現。docs/ARCHITECTURE.md §4.2。
+// インタラクト可能な対象の縁取り。docs/ARCHITECTURE.md §4.2。
 //
-//   Rim     … L2 近接ヒント。輪郭だけが淡く光る（加算）。強さは距離で InteractableHighlight が決める
-//   Outline … L3 照準ヒント。ホバー中の縁取り（背面を法線方向に押し出す inverted hull）
-//
+// 背面を法線方向に押し出して描く（inverted hull）。幅は画面のピクセルで指定する。
 // 対象のマテリアルは差し替えない。InteractableHighlight が各 Renderer の末尾に
 // このマテリアルを 1 枚足し、元の描画の上に重ねる。
 Shader "Portfolio/InteractableHighlight"
 {
     Properties
     {
-        _RimColor ("Rim Color", Color) = (1, 0.86, 0.62, 1)
-        _RimStrength ("Rim Strength", Range(0, 1)) = 0
-        _RimPower ("Rim Power", Range(0.5, 8)) = 2.5
         _OutlineColor ("Outline Color", Color) = (1, 1, 1, 1)
         _OutlineStrength ("Outline Strength", Range(0, 1)) = 0
         _OutlineWidth ("Outline Width (px)", Range(0, 8)) = 2.5
@@ -20,64 +15,6 @@ Shader "Portfolio/InteractableHighlight"
     SubShader
     {
         Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Transparent" "Queue" = "Transparent" }
-
-        HLSLINCLUDE
-        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
-        CBUFFER_START(UnityPerMaterial)
-            half4 _RimColor;
-            half _RimStrength;
-            half _RimPower;
-            half4 _OutlineColor;
-            half _OutlineStrength;
-            half _OutlineWidth;
-        CBUFFER_END
-
-        struct Attributes
-        {
-            float4 positionOS : POSITION;
-            float3 normalOS : NORMAL;
-        };
-        ENDHLSL
-
-        Pass
-        {
-            Name "Rim"
-            Tags { "LightMode" = "UniversalForward" }
-            Blend One One
-            ZWrite Off
-            ZTest LEqual
-            Cull Back
-
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-
-            struct Varyings
-            {
-                float4 positionCS : SV_POSITION;
-                float3 normalWS : TEXCOORD0;
-                float3 viewDirWS : TEXCOORD1;
-            };
-
-            Varyings vert(Attributes input)
-            {
-                Varyings output;
-                float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
-                output.positionCS = TransformWorldToHClip(positionWS);
-                output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-                output.viewDirWS = GetWorldSpaceViewDir(positionWS);
-                return output;
-            }
-
-            half4 frag(Varyings input) : SV_Target
-            {
-                half facing = saturate(dot(normalize(input.normalWS), normalize(input.viewDirWS)));
-                half rim = pow(1 - facing, _RimPower) * _RimStrength;
-                return half4(_RimColor.rgb * rim, 0);
-            }
-            ENDHLSL
-        }
 
         Pass
         {
@@ -91,6 +28,19 @@ Shader "Portfolio/InteractableHighlight"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                half4 _OutlineColor;
+                half _OutlineStrength;
+                half _OutlineWidth;
+            CBUFFER_END
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+            };
 
             float4 vert(Attributes input) : SV_POSITION
             {

@@ -1,13 +1,14 @@
 using UnityEngine;
 
-// インタラクト可能な対象のヒント表現。docs/ARCHITECTURE.md §4.2 の L2 / L3。
+// インタラクト可能な対象の縁取り。docs/ARCHITECTURE.md §4.2。
 //
-//   L2 近接ヒント … プレイヤーが hintRadius に入ると輪郭が淡く光り、focusRadius で最大になる
-//   L3 照準ヒント … マウスでホバーしている間だけ縁取りが出る
+// 次のどちらかの間だけ縁取りを出す:
+//   - 操作できる距離に入り、E の候補になっている（ProximityInteractor の InRangeChanged）
+//   - マウスでホバーしている（PointerInteractor の HoverChanged）
 //
 // Interactable と同じ GameObject に付ける。対象の Renderer（子を含む）の末尾に
 // highlightMaterial の複製を 1 枚足して重ねるだけで、元のマテリアルには触らない。
-// どちらも 0 のときは足したマテリアルを外す（見えないのに描画し続けないため）。
+// 縁取りが消えているときは足したマテリアルを外す（見えないのに描画し続けないため）。
 //
 // Interactable が無効（CanActivate == false）の間は何も出さない。
 // 演出で対象外にしたいときは Interactable を disable すればよい。
@@ -23,31 +24,22 @@ public class InteractableHighlight : MonoBehaviour
     // 重ねる Renderer。空なら子のすべての MeshRenderer / SkinnedMeshRenderer。
     [SerializeField] Renderer[] targets = null;
 
-    [Header("L2 Rim")]
-    [SerializeField] Color rimColor = new Color(1f, 0.86f, 0.62f, 1f);
-    [SerializeField, Range(0f, 1f)] float rimMax = 0.6f;
-
-    [Header("L3 Outline")]
+    [Header("Outline")]
     [SerializeField] Color outlineColor = Color.white;
     [SerializeField, Range(0f, 8f)] float outlineWidth = 2.5f;
-
-    [Header("Fade")]
     // 0→1 にかかるおおよその秒数。
-    [SerializeField] float fadeSeconds = 0.25f;
+    [SerializeField] float fadeSeconds = 0.2f;
 
-    static readonly int RimColorId = Shader.PropertyToID("_RimColor");
-    static readonly int RimStrengthId = Shader.PropertyToID("_RimStrength");
     static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
     static readonly int OutlineStrengthId = Shader.PropertyToID("_OutlineStrength");
     static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
 
     Interactable interactable;
-    ProximityInteractor player;
     Material instance;
     bool attached;
     bool hovered;
-    float rim;
-    float outline;
+    bool inRange;
+    float strength;
 
     void Awake() {
         interactable = GetComponent<Interactable>();
@@ -57,13 +49,15 @@ public class InteractableHighlight : MonoBehaviour
 
     void OnEnable() {
         InteractionSignals.HoverChanged += OnHoverChanged;
+        InteractionSignals.InRangeChanged += OnInRangeChanged;
     }
 
     void OnDisable() {
         InteractionSignals.HoverChanged -= OnHoverChanged;
+        InteractionSignals.InRangeChanged -= OnInRangeChanged;
         hovered = false;
-        rim = 0f;
-        outline = 0f;
+        inRange = false;
+        strength = 0f;
         SetAttached(false);
     }
 
@@ -75,36 +69,26 @@ public class InteractableHighlight : MonoBehaviour
         if (instance == null) return;
 
         bool active = interactable.isActiveAndEnabled && interactable.CanActivate;
-        float rimTarget = active ? rimMax * ProximityStrength() : 0f;
-        float outlineTarget = active && hovered ? 1f : 0f;
-
+        float target = active && (hovered || inRange) ? 1f : 0f;
         float step = fadeSeconds > 0f ? Time.deltaTime / fadeSeconds : 1f;
-        rim = Mathf.MoveTowards(rim, rimTarget, step);
-        outline = Mathf.MoveTowards(outline, outlineTarget, step);
+        strength = Mathf.MoveTowards(strength, target, step);
 
-        bool visible = rim > 0.001f || outline > 0.001f;
+        bool visible = strength > 0.001f;
         SetAttached(visible);
         if (!visible) return;
 
-        instance.SetColor(RimColorId, rimColor);
-        instance.SetFloat(RimStrengthId, rim);
         instance.SetColor(OutlineColorId, outlineColor);
-        instance.SetFloat(OutlineStrengthId, outline);
+        instance.SetFloat(OutlineStrengthId, strength);
         instance.SetFloat(OutlineWidthId, outlineWidth);
-    }
-
-    float ProximityStrength() {
-        if (player == null) {
-            player = FindAnyObjectByType<ProximityInteractor>();
-            if (player == null) return 0f;
-        }
-        // 対話などで止まっている間は光らせない。話している相手が光り続けると読む邪魔になる。
-        if (player.IsPaused) return 0f;
-        return interactable.HintStrength(player.OriginPosition);
     }
 
     void OnHoverChanged(Interactable target, Vector2 screenPos) {
         hovered = target == interactable;
+    }
+
+    // ProximityInteractor は対話などで止まると候補を null にするので、その間は自然に消える。
+    void OnInRangeChanged(Interactable target) {
+        inRange = target == interactable;
     }
 
     void SetAttached(bool attach) {

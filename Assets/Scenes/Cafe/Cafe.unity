@@ -275,8 +275,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableHighlight
   highlightMaterial: {fileID: 2100000, guid: 6cb20047d177e40349c0a65968421cdc, type: 2}
   targets: []
-  rimColor: {r: 1, g: 0.86, b: 0.62, a: 1}
-  rimMax: 0.6
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
   outlineWidth: 2.5
   fadeSeconds: 0.25
@@ -8201,8 +8199,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableHighlight
   highlightMaterial: {fileID: 2100000, guid: 6cb20047d177e40349c0a65968421cdc, type: 2}
   targets: []
-  rimColor: {r: 1, g: 0.86, b: 0.62, a: 1}
-  rimMax: 0.6
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
   outlineWidth: 2.5
   fadeSeconds: 0.25

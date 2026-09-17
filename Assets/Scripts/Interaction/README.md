@@ -18,7 +18,7 @@
 | `PointerInteractor` | プレイヤー | PC 用。マウスの hover を追い、左クリックで選択 |
 | `InteractionSignals` | （static） | Interactor が出す通知の集約点。`Portfolio.Web.WebBridge` が `InRangeChanged` / `ObjectSelected` を購読する（`HoverChanged` は購読しない） |
 | `SignalInteractable` | 対象 | 一番単純な実装。UnityEvent を呼ぶだけ |
-| `InteractableHighlight` | 対象 | L2（近づくと輪郭が淡く光る）/ L3（ホバーで縁取り）。`Assets/Materials/InteractableHighlight.mat` を参照させる |
+| `InteractableHighlight` | 対象 | 操作できる距離に入った（E の候補になった）とき、またはホバー中に縁取りを出す。`Assets/Materials/InteractableHighlight.mat` を参照させる |
 | `HoverCursor` | （static） | ホバー中はカーソルを手の形にする（WebGL のみ。canvas の CSS を切り替える。Web へのイベントではない） |
 | `DevPreview/*` | （Editor 専用） | Web ができるまでの見た目確認用。ビルドに含まれない |
 
