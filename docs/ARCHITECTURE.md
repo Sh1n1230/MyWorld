@@ -1,7 +1,7 @@
 # Interactive 3D Portfolio — アーキテクチャ設計書 v2
 
 > Status: **v2 — 2026-09-09 全面改訂。**
-> 対象: Unity `github.com/Sh1n1230/MyWorld`（6000.6.0f1 / URP 17.6.0） + Web `github.com/Sh1n1230/sh1n1230.dev`（未作成）
+> 対象: Unity `github.com/Sh1n1230/MyWorld`（6000.6.0f1 / URP 17.6.0） + Web `github.com/Sh1n1230/sh1n1230.dev`
 > **このファイルには「決まったこと」しか書かない。** 構想・方向性・まだ決めていないことは `VISION.md` に置く。
 > Unity ↔ Web の通信契約は `EVENT_SCHEMA.md`。v1 とその周辺資料は `docs/archive/` にある。
 
@@ -33,7 +33,8 @@
 ### 0.3 Cafe.unity の中身
 
 - NPC **1 体**（Kenney `characterMedium` + `skaterMaleA`、`Chair_Sit_Idle_1_L.controller` で着席アイドル）
-- `SignalInteractable` **1 個** — `id: cafe.npc.smoker.cigarette` / `labelKey: cafe.cigarette.label`
+- `SignalInteractable` **2 個** — `cafe.npc.smoker.cigarette`（`notifyWebOnSelect: false`）/ `cafe.exhibit.penguin`
+- `CafeSequence`（2026-09-17 時点で配置済み）
 - `ParticleSystem` 1 個（煙） + `CigaretteSmokeController`
 - `SceneIntroSequence`（入店演出）/ `BgmSceneTrigger`
 - **専用カメラは無い**（カメラは `Player.prefab` 側）
@@ -46,7 +47,7 @@
 - `Assets/Scripts/Audio/` / `SceneIntroSequence.cs` / `MenuController.cs` / `DevSettings.cs`
 
 **2026-09-09 に `WebBridge` / `WebEvents` / `CafeSequence` / `CigaretteCutscene` / `PortfolioBridge.jslib` を追加した。**
-Unity 側で残っているのは **Editor での配線のみ**（`EVENT_SCHEMA.md` §9）。
+Editor での配線（`EVENT_SCHEMA.md` §9）とペンギンの設置は済んだ。**Unity 側で残っているのは L2 / L3 のヒント表現（§4.2）と店員（§4.1）。**
 
 ### 0.5 WebGL ビルド実測（2026-08-20 時点、PlayerChoose 追加前）
 
@@ -91,14 +92,14 @@ Unity WebGL のロードは初回 20〜60 秒かかる。作品を 1 つ見る�
 
 `MyWorld` の Git 履歴・LFS 設定・`.gitignore` は健全。移行作業ゼロ = 履歴破壊リスクゼロ。
 
-### D4 — アクセシブルな経路は「静的簡易版」が担う
+### D4 — アクセシブルな経路は「静的ポートフォリオ」が担う
 
 Unity WebGL は `<canvas>` に描画するだけで、**DOM のアクセシビリティツリーを持たない**。スクリーンリーダーからは空のキャンバスに見える。`UnityEngine.Accessibility` API は iOS VoiceOver / Android TalkBack 向けで **WebGL は対象外**。
 
 つまり 3D 世界のスクリーンリーダー対応は、Unity 側に手段が存在しない。**D2 が用意する「同じ URL 空間の静的ページ」が、そのままアクセシブルな経路になる。**
 
 - **Phase 1** — DOM の UI（言語選択・アンケート・対話・ミュートボタン）は Tab / Enter / Esc で操作できる。3D 内はスクリーンリーダー対応を試みない。
-- **Phase 2** — 静的簡易版がアクセシブルな経路を担う。
+- **Phase 2** — 静的ポートフォリオがアクセシブルな経路を担う。
 
 ---
 
@@ -218,13 +219,17 @@ NPC のタバコ                 ペンギン（作品）
 | カメラ回転 | 右ドラッグ（**ポインタロックは使わない**） |
 | インタラクト | 左クリック（ホバー中）または `E` |
 | 対話送り | クリック / Space / Enter |
-| 閉じる | Esc |
+| 閉じる | Esc（**対話中は物の説明だけ閉じられる。NPC の対話では効かない**。§7.4） |
 
 > ポインタロックを使わない理由: カーソルが見えていることが「クリックできる対象がある」という認知の前提になる。Esc で解除される・許可プロンプトが出る・iOS 非対応など摩擦が大きい。
 
 **クリック移動（point-and-click）は今は作らない。** 採否は「WASD を知らない訪問者が歩けるか」という一点で決まり、それは Phase 1 の完了条件（他人が説明なしで通せたか）の検証がそのまま答えを出す。必要と分かってから NavMesh をベイクして追加する。それまでは操作系を `PortfolioInput` として差し替え可能な形にしておくだけでよい。
 
-**スマホは Phase 1 では対象外。** 「PC でご覧ください」+ 主要作品への外部リンク + 自己紹介 3 行 + 連絡先 の 1 画面で受ける（= 最小の名刺ページ）。ここに辿り着くのは「Unity が動かなかった recruiter」である可能性が最も高く、リンクも連絡先も無いまま帰すのが最大の失点になる。この 1 画面が Phase 2 の簡易版の出発点になる。
+**スマホは Phase 1 では対象外。** 「PC でご覧ください」+ 主要作品への外部リンク + 自己紹介 3 行 + 連絡先 の 1 画面で受ける（= **静的ポートフォリオ**の最小版。`/[lang]/text`）。ここに辿り着くのは「Unity が動かなかった recruiter」である可能性が最も高く、リンクも連絡先も無いまま帰すのが最大の失点になる。この 1 画面が Phase 2 の静的ポートフォリオの出発点になる。
+
+- **振り分け条件**: `WebGL2 が使えない` **または** `pointer: coarse かつ 画面幅 < 1024px`。UA 判定は使わない（壊れやすい）。該当したら Unity をロードせずに静的ポートフォリオへ送る。
+- **「それでも 3D を試す」導線は置かない。** 判定から外れた人は PC で来ればよい。操作できない 26 MB を落とさせない。
+- **連絡先**: メール / X / LinkedIn / GitHub の 4 つ。
 
 ---
 
@@ -267,7 +272,7 @@ Assets/Plugins/WebGL/
 └── PortfolioBridge.jslib         ✅ Unity → Web
 ```
 
-**残っているのは Editor での配線だけ**（`EVENT_SCHEMA.md` §9）。
+Editor での配線（`EVENT_SCHEMA.md` §9）は済んだ。
 
 ### 6.2 WebBridge
 
@@ -368,6 +373,7 @@ NPC の台詞も、ペンギンの説明も、**同じコンポーネント**が
 
 - 送りは **クリック / Space / Enter**。自動では流れない。
 - **スキップは付けない。** 6〜8 行がこの体験の唯一の核である。
+- **Esc は話者行の有無で変わる。** NPC（話者あり）では無効、ペンギンなど物の説明（話者なし）では閉じる。§4.3 の「閉じる = Esc」は物の説明にだけ適用する。
 - **Phase 1 では外部リンクを 1 本も置かない。** 入って 60 秒で外部サイトに飛ばす導線があると「入る体験」という設計の中心が崩れる。
 
 ### 7.5 英語化の運用
@@ -403,7 +409,7 @@ CI での Unity ビルドは**行わない**（ライセンス設定の手間に
 
 ### 8.3 Phase 1 は非公開
 
-**Vercel の Preview URL + `noindex`** で確認する。localhost だけで済ませると、配信ヘッダ・Brotli・キャッシュ・実機の遅さという**本番でしか出ない問題が Phase 2 まで見つからない**。
+**Vercel の Preview URL + `noindex`** で確認する。**Deployment Protection は切る**（URL を知っている人だけが見られる状態）。テスターに Vercel のログインを要求すると完了条件が成立しないため。localhost だけで済ませると、配信ヘッダ・Brotli・キャッシュ・実機の遅さという**本番でしか出ない問題が Phase 2 まで見つからない**。
 
 ---
 
@@ -413,22 +419,25 @@ CI での Unity ビルドは**行わない**（ライセンス設定の手間に
 
 1. `ARCHITECTURE.md` v2 / `VISION.md` / `EVENT_SCHEMA.md`
 2. ~~Unity: `WebBridge.cs` + `PortfolioBridge.jslib` + `InteractionSignals` への接続~~ ✅
-3. ~~Unity: `CafeSequence.cs` / `CigaretteCutscene.cs`~~ ✅ → **Editor で配線**（`EVENT_SCHEMA.md` §9）
-   + 店員追加（会釈のみ）/ ペンギンモデル配置 + `Interactable`
-4. Web: `Sh1n1230/sh1n1230.dev` 新規 + Next.js + Unity canvas 常駐
-5. Web: 言語選択 → アンケート → キャラ選択オーバーレイ → 対話ボックス → タイトル演出
-6. Web: ミュートボタン / 音声トースト / 非対応時の名刺ページ
+3. ~~Unity: `CafeSequence.cs` / `CigaretteCutscene.cs` → Editor で配線 / ペンギン配置~~ ✅
+   + 店員追加（会釈のみ）/ L2・L3 のヒント表現（§4.2）
+4. ~~Web: `Sh1n1230/sh1n1230.dev` 新規 + Next.js + Unity canvas 常駐~~ ✅
+5. ~~Web: 言語選択 → アンケート → キャラ選択オーバーレイ → 対話ボックス → タイトル演出~~ ✅ + ~~再訪（`RESTORE_SESSION`）~~ ✅ + 対話中の Esc（§7.4）
+6. Web: ミュートボタン / 音声トースト / 非対応時の静的ポートフォリオ（振り分け・連絡先。§4.3）
 7. Vercel Preview（`noindex`）にデプロイ
 
 **完了条件: 他人に Preview URL を渡して、説明なしで最後まで行けた。**
 自分で通せたことは条件にしない（作った本人は迷わないので必ず通る）。
+
+テスターは作者の友人（電気通信大学、PC に慣れた人が多い）に頼む。非同期で頼む場合は**画面録画をもらう**（どこで何秒止まったかが分からないと直せない）。
+全員が WASD に慣れている場合、クリック移動の採否（§4.3）はこの検証では決まらないので、Phase 1 では保留とする。
 
 **Phase 1 でやらないこと**（明示）
 ProjectPanel / WorldMap / HUD / VILLAGE / FACTORY / スマホ対応 / クリック移動 / DB / Analytics / 英語版 / 外部リンク / Cinemachine / 独自ドメイン。
 
 ### Phase 2 — 公開版
 
-静的簡易版ポートフォリオ（スマホ / SEO / OGP / アクセシブル経路）+ ProjectPanel + **ペンギンを ProjectPanel に昇格** + **この時点の全文章の英語版** + iOS Safari 実機検証 + ドメイン取得 → **ここで初めて公開する**。
+静的ポートフォリオ（スマホ / SEO / OGP / アクセシブル経路）+ ProjectPanel + **ペンギンを ProjectPanel に昇格** + **この時点の全文章の英語版** + iOS Safari 実機検証 + ドメイン取得 → **ここで初めて公開する**。
 
 ### Phase 3 — アンケートの DB 化 + Analytics
 
@@ -447,7 +456,7 @@ PostgreSQL。バックエンドを初めて作る段階。**「バックエン�
 | リスク | 度合 | 対策 |
 |---|---|---|
 | **スコープの膨張** | 🔴 | Phase 1 の「やらないこと」を明示済み（§9）。カフェの interactable 上限 4 個（§4.1）。**公開されないことが最大の失敗である** |
-| iOS Safari のメモリ | 🟡 未検証 | Phase 1 では対象外。Phase 2 で実機検証。ダメなら静的簡易版に寄せる |
+| iOS Safari のメモリ | 🟡 未検証 | Phase 1 では対象外。Phase 2 で実機検証。ダメなら静的ポートフォリオに寄せる |
 | 「何をクリックすればいいか分からない」 | 🟡 | 3 層のヒント（§4.2）+ 完了条件を「他人が説明なしで通せた」にすることで検証する |
 | ID の不一致 | 🟡 | 例外が出ずに無反応になるだけなので気づきにくい。ID 一覧を `EVENT_SCHEMA.md` §6 に集約し、Web 側に未知 ID の warn を入れる |
 | ビルド成果物による git の肥大 | 🟢 | 10〜20 回までは許容。膨らんだら外部ストレージへ（§8.1） |
@@ -468,7 +477,7 @@ PostgreSQL。バックエンドを初めて作る段階。**「バックエン�
 | CMS | 一人運用。Git で足りる |
 | Cinemachine / Timeline（Phase 1） | カットが 1 本しかない |
 | ポインタロック | 摩擦が大きい。確実性を優先する |
-| 3D 世界のスクリーンリーダー対応 | D4。Unity WebGL に手段が存在しない。静的簡易版が担う |
+| 3D 世界のスクリーンリーダー対応 | D4。Unity WebGL に手段が存在しない。静的ポートフォリオが担う |
 | Cookie / IP の取得 | プライバシーを主題に置く以上、必要になるまで持たない |
 | GitHub Actions での Unity ビルド | ライセンス設定の手間に見合わない |
 

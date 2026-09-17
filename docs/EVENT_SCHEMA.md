@@ -183,7 +183,7 @@ Unity 側は `Interactable.NotifyWebOnSelect` でこれを表現している。
 |---|---|---|
 | `cafe.npc.smoker` | NPC | シーンに存在（`Interactable` は付いていない） |
 | `cafe.npc.smoker.cigarette` | Interactable | ✅ `Cafe.unity` に設置済み |
-| `cafe.exhibit.penguin` | Interactable | 未設置 |
+| `cafe.exhibit.penguin` | Interactable | ✅ `Cafe.unity` に設置済み |
 | `cafe.staff` | 背景 NPC | 未設置。**`Interactable` を付けない** |
 
 ### labelKey
@@ -191,7 +191,7 @@ Unity 側は `Interactable.NotifyWebOnSelect` でこれを表現している。
 | labelKey | 使う場所 | 状態 |
 |---|---|---|
 | `cafe.cigarette.label` | ✅ 設置済み | |
-| `cafe.penguin.label` | 未設置 | |
+| `cafe.penguin.label` | ✅ 設置済み | |
 
 ### dialogueId
 
@@ -208,7 +208,7 @@ Web 側には **「未知の id / labelKey / dialogueId を受け取ったら `c
 
 | 異常 | 挙動 |
 |---|---|
-| `BRIDGE_READY` が 60 秒来ない | ローディング画面にエラー + リロード導線 + 名刺ページへのリンク |
+| `BRIDGE_READY` が 60 秒来ない | ローディング画面にエラー + リロード導線 + 静的ポートフォリオ（`/[lang]/text`）へのリンク |
 | プロトコルバージョン不一致 | Web がコンソールに警告。Unity 再ビルドが必要な旨を開発者向けに表示 |
 | 未知の `type` | 双方向とも warn して無視。**絶対に例外を投げない** |
 | payload の検証失敗 | warn して無視。UI は変化させない |
