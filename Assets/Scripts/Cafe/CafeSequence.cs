@@ -7,13 +7,19 @@ namespace Portfolio.Cafe
     /// <summary>
     /// カフェの進行を仕切る状態機械。docs/ARCHITECTURE.md §6.3 / docs/EVENT_SCHEMA.md §4。
     ///
-    ///   entering → explore → focusing → (Web が対話 6〜8 行) → lighting → smoke → title → free
+    ///   entering → explore → focusing → (Web が対話 6〜8 行) → (男をもう一度選ぶ = 火を貸す)
+    ///            → lighting → smoke → title → free
     ///
     /// 各段階で SEQUENCE_STATE を Web に送る。**Unity は Web が今どんな UI を出しているかを知らない。**
     /// 対話の進行の主導権は Web にあるので、ここは END_DIALOGUE が返ってくるまで待つ。
     ///
+    /// 対話が閉じても着火しない。カメラは男に寄せたまま focusing に留まり、
+    /// 訪問者が男をクリック（または E）したときに火がつく。新しい状態は増やしていない —
+    /// Web は「focusing で対話が出ていない」ことから、火を貸す場面だと判断できる。
+    /// focusing に入ってから解放までは、プレイヤーの移動を止める（カメラが固定されているため）。
+    ///
     /// セットアップ:
-    ///   - タバコの SignalInteractable は「notifyWebOnSelect のチェックを外す」こと。
+    ///   - 男の SignalInteractable は「notifyWebOnSelect のチェックを外す」こと。
     ///     ここが DIALOGUE_REQUESTED を送るので、OBJECT_SELECTED と二重になる。
     ///   - このコンポーネントはカフェのシーンに 1 つ置く。
     /// </summary>
@@ -27,6 +33,10 @@ namespace Portfolio.Cafe
 
         [Header("References")]
         [SerializeField] CigaretteCutscene cutscene = null;
+        [Tooltip("男の Interactable。着火が始まったら無効にして、光りもプロンプトも止める。")]
+        [SerializeField] Interactable npcInteractable = null;
+        [Tooltip("移動を止める相手。未設定ならシーンから探す。")]
+        [SerializeField] ProximityInteractor player = null;
         [Tooltip("寄る対象。NPC の顔かタバコの位置に空オブジェクトを置いて指す。")]
         [SerializeField] Transform focusTarget = null;
         [Tooltip("煙を追うときの対象。パーティクルの少し上に空オブジェクトを置いて指す。")]
@@ -46,6 +56,7 @@ namespace Portfolio.Cafe
         string state;
         bool started;
         bool dialogueClosed;
+        bool movementLocked;
 
         void OnEnable()
         {
@@ -67,6 +78,7 @@ namespace Portfolio.Cafe
             if (WebSession.HasSeen(sequenceId))
             {
                 started = true;
+                if (npcInteractable != null) npcInteractable.enabled = false;
                 SetState(SequenceState.Free);
                 return;
             }
@@ -89,14 +101,22 @@ namespace Portfolio.Cafe
         {
             if (interactable == null) return;
             if (interactable.Id != cigaretteInteractableId) return;
-            if (state != SequenceState.Explore) return;   // 二度目以降は無視する。
 
-            StartCoroutine(FocusThenAskForDialogue());
+            if (state == SequenceState.Explore)
+            {
+                StartCoroutine(FocusThenAskForDialogue());
+            }
+            else if (state == SequenceState.Focusing && dialogueClosed)
+            {
+                // 対話を終えたあと、もう一度男を選んだ = 火を貸した。
+                StartCoroutine(LightThenTitle());
+            }
         }
 
         IEnumerator FocusThenAskForDialogue()
         {
             SetState(SequenceState.Focusing);
+            LockMovement(true);
 
             if (cutscene != null && focusTarget != null) cutscene.FocusOn(focusTarget, focusDuration);
             yield return new WaitForSeconds(focusDuration);
@@ -113,13 +133,14 @@ namespace Portfolio.Cafe
             if (state != SequenceState.Focusing) return;
             if (dialogueClosed) return;
 
+            // ここでは着火しない。訪問者が男を選ぶのを待つ（OnObjectSelected）。
             dialogueClosed = true;
-            StartCoroutine(LightThenTitle());
         }
 
         IEnumerator LightThenTitle()
         {
-            // 着火
+            // 着火。ここから先はもう選べないので、光りとプロンプトを止める。
+            if (npcInteractable != null) npcInteractable.enabled = false;
             SetState(SequenceState.Lighting);
             if (npcAnimator != null && !string.IsNullOrEmpty(npcLightTrigger))
             {
@@ -141,7 +162,23 @@ namespace Portfolio.Cafe
             // 解放
             if (cutscene != null) cutscene.Release(releaseDuration);
             yield return new WaitForSeconds(releaseDuration);
+            LockMovement(false);
             SetState(SequenceState.Free);
+        }
+
+        void OnDestroy()
+        {
+            LockMovement(false);
+        }
+
+        void LockMovement(bool locked)
+        {
+            if (movementLocked == locked) return;
+            if (player == null) player = FindAnyObjectByType<ProximityInteractor>();
+            if (player == null) return;
+            movementLocked = locked;
+            if (locked) player.LockMovement();
+            else player.UnlockMovement();
         }
 
         void SetState(string next)

@@ -261,6 +261,68 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CigaretteSmokeController
   mouthSmoke: {fileID: 615645075}
   cigaretteTipSmoke: {fileID: 615645075}
+--- !u!114 &108374236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108374232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0510d2f42ddbe46cd9ca94467b7f435b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableHighlight
+  highlightMaterial: {fileID: 2100000, guid: 6cb20047d177e40349c0a65968421cdc, type: 2}
+  targets: []
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2.5
+  fadeSeconds: 0.25
+--- !u!136 &108374237
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108374232}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.81
+  m_Height: 3.4700003
+  m_Direction: 1
+  m_Center: {x: -0.007349491, y: 1.6450005, z: 0.13999996}
+--- !u!114 &108374238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108374232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a566058c7c4b53a7d3914d1083e6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SignalInteractable
+  id: cafe.npc.smoker.cigarette
+  labelKey: cafe.cigarette.label
+  hintRadius: 4
+  focusRadius: 2
+  focusPoint: {fileID: 876879696}
+  oneShot: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+  notifyWebOnSelect: 0
 --- !u!1001 &127438809
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6644,11 +6706,13 @@ MonoBehaviour:
   dialogueId: cafe.intro
   speakerId: cafe.npc.smoker
   cutscene: {fileID: 822760804}
+  npcInteractable: {fileID: 108374238}
+  player: {fileID: 1797960099}
   focusTarget: {fileID: 876879696}
   smokeTarget: {fileID: 1050370558}
   smoke: {fileID: 108374235}
   npcAnimator: {fileID: 108374233}
-  npcLightTrigger: Light
+  npcLightTrigger: Smoke
   focusDuration: 0.6
   lightingDuration: 1.2
   smokeDuration: 2.5
@@ -6992,7 +7056,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 876879696}
-  - component: {fileID: 876879697}
   m_Layer: 0
   m_Name: Cigarette
   m_TagString: Untagged
@@ -7015,28 +7078,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 567529021}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &876879697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 876879695}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a566058c7c4b53a7d3914d1083e6a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SignalInteractable
-  id: cafe.npc.smoker.cigarette
-  labelKey: cafe.cigarette.label
-  hintRadius: 4
-  focusRadius: 2
-  focusPoint: {fileID: 0}
-  oneShot: 0
-  onActivate:
-    m_PersistentCalls:
-      m_Calls: []
-  notifyWebOnSelect: 0
 --- !u!1001 &897079307
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7668,6 +7709,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7c4970082749047828bb46a33deb804b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 108374235}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7c4970082749047828bb46a33deb804b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 108374238}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7c4970082749047828bb46a33deb804b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 108374237}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7c4970082749047828bb46a33deb804b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 108374236}
   m_SourcePrefab: {fileID: 100100000, guid: 7c4970082749047828bb46a33deb804b, type: 3}
 --- !u!1001 &1007638706
 PrefabInstance:
@@ -8009,6 +8059,7 @@ MonoBehaviour:
   onIntroComplete:
     m_PersistentCalls:
       m_Calls: []
+  skipIfSeenSequenceId: cafe.intro
 --- !u!114 &1038055147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8067,6 +8118,7 @@ GameObject:
   - component: {fileID: 1103580388}
   - component: {fileID: 1103580390}
   - component: {fileID: 1103580389}
+  - component: {fileID: 1103580391}
   m_Layer: 0
   m_Name: penguin
   m_TagString: Untagged
@@ -8133,6 +8185,23 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   notifyWebOnSelect: 1
+--- !u!114 &1103580391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1103580387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0510d2f42ddbe46cd9ca94467b7f435b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableHighlight
+  highlightMaterial: {fileID: 2100000, guid: 6cb20047d177e40349c0a65968421cdc, type: 2}
+  targets: []
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2.5
+  fadeSeconds: 0.25
 --- !u!43 &1152247942
 Mesh:
   m_ObjectHideFlags: 0
@@ -10659,6 +10728,17 @@ Camera:
   m_CorrespondingSourceObject: {fileID: 467838990517910089, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
   m_PrefabInstance: {fileID: 1797960096}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1797960099 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3789984933373006504, guid: fb93ee9fc28ba844384c5dbf7e952541, type: 3}
+  m_PrefabInstance: {fileID: 1797960096}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94a1a1b52f7e8439686387ac2f1df653, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProximityInteractor
 --- !u!1 &1822553950
 GameObject:
   m_ObjectHideFlags: 0

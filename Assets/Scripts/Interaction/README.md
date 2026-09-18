@@ -18,6 +18,8 @@
 | `PointerInteractor` | プレイヤー | PC 用。マウスの hover を追い、左クリックで選択 |
 | `InteractionSignals` | （static） | Interactor が出す通知の集約点。`Portfolio.Web.WebBridge` が `InRangeChanged` / `ObjectSelected` を購読する（`HoverChanged` は購読しない） |
 | `SignalInteractable` | 対象 | 一番単純な実装。UnityEvent を呼ぶだけ |
+| `InteractableHighlight` | 対象 | 操作できる距離に入った（E の候補になった）とき、またはホバー中に縁取りを出す。`Assets/Materials/InteractableHighlight.mat` を参照させる |
+| `HoverCursor` | （static） | ホバー中はカーソルを手の形にする（WebGL のみ。canvas の CSS を切り替える。Web へのイベントではない） |
 | `DevPreview/*` | （Editor 専用） | Web ができるまでの見た目確認用。ビルドに含まれない |
 
 ## Web への接続点
@@ -75,9 +77,6 @@ WebBridge ができたら、`InteractionSignals` を購読する立場を WebBri
 
 ## まだやっていないこと
 
-- `HighlightController`（docs §10.3）— 距離に応じた発光 / アウトライン。
-  `Interactable.HintStrength(from)` が 0→1 を返すのでフックは用意済み。
-  URP の Renderer Feature を使うか Emission 差し替えにするかはマテリアル側の判断待ち。
 - `Portfolio.Runtime.asmdef`（docs §10.1）— 今入れると壊れる。
   `ProximityInteractor` は `CharacterControllerBase` / `Visuals3rdPerson` /
   `SceneIntroSequence` を参照しているが、これらは asmdef の無い Assembly-CSharp にいる。

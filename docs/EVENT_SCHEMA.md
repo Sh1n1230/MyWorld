@@ -118,7 +118,10 @@ Web                                             Unity
  │──── ADVANCE_DIALOGUE { lineIndex: 0 } ────────▶│
  │  …（6〜8 行）…                                  │
  │──── ADVANCE_DIALOGUE { lineIndex: n } ────────▶│  最終行 =「火、持ってない?」
- │──────── END_DIALOGUE { "cafe.intro" } ────────▶│
+ │──────── END_DIALOGUE { "cafe.intro" } ────────▶│  カメラは男に寄せたまま focusing に留まる
+ │─────────── SET_PAUSED { false } ──────────────▶│  （移動は Unity 側で止めたまま）
+ │  「火を貸す」の場面（focusing かつ対話なし）       │
+ │                                （プレイヤーが男を E / クリック）
  │◀──────── SEQUENCE_STATE { lighting } ──────────│
  │◀──────── SEQUENCE_STATE { smoke } ─────────────│
  │◀──────── SEQUENCE_STATE { title } ─────────────│
@@ -182,7 +185,7 @@ Unity 側は `Interactable.NotifyWebOnSelect` でこれを表現している。
 | ID | 種別 | 状態 |
 |---|---|---|
 | `cafe.npc.smoker` | NPC | シーンに存在（`Interactable` は付いていない） |
-| `cafe.npc.smoker.cigarette` | Interactable | ✅ `Cafe.unity` に設置済み |
+| `cafe.npc.smoker.cigarette` | Interactable | ✅ `Cafe.unity` の男（`characterMedium`）に設置済み。名前はタバコだが、話しかけ・火を貸す対象は男 |
 | `cafe.exhibit.penguin` | Interactable | ✅ `Cafe.unity` に設置済み |
 | `cafe.staff` | 背景 NPC | 未設置。**`Interactable` を付けない** |
 

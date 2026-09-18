@@ -19,4 +19,12 @@ mergeInto(LibraryManager.library, {
     window.dispatchEvent(new CustomEvent("unity:message", { detail: detail }));
   },
 
+  // ホバー中のカーソルを手の形にする（docs/ARCHITECTURE.md §4.2 の L3）。
+  // イベントではない — canvas の CSS を触るだけで、Web のアプリ側は関与しない。
+  PortfolioSetPointerCursor: function (pointer) {
+    var canvas = Module["canvas"];
+    if (!canvas) return;
+    canvas.style.cursor = pointer ? "pointer" : "";
+  },
+
 });
